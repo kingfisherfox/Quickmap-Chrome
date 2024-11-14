@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "QuickMap Flowchart Creator",
+  "description": "Create and edit flowcharts seamlessly.",
+  "version": "1.0",
+  "permissions": ["tabs"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "icons": {
+    "16": "img/icon16.png",
+    "48": "img/icon48.png",
+    "128": "img/icon128.png"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "action": {
+    "default_title": "QuickMap Flowchart Creator"
+  }
+}
