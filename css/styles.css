@@ -23,6 +23,47 @@ body {
     cursor: default;
 }
 
+/* Header styles */
+#header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #007BFF;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+#header-bar h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+}
+
+#header-bar #clear-btn {
+    background-color: #FF4D4D;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-left: 24px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#header-bar #clear-btn:hover {
+    background-color: #E63939;
+
+}
+
 /* Node container */
 .node {
     position: absolute;
@@ -104,16 +145,6 @@ body {
     position: absolute;
 }
 
-/* Style for plain connectors */
-.plain-connector {
-    stroke: #007BFF !important;
-}
-
-/* Style for dashed connectors */
-.dashed-connector {
-    stroke: #007BFF !important;
-    stroke-dasharray: 4 2 !important;
-}
 
 .connection-point {
     position: absolute;
@@ -146,4 +177,35 @@ body {
     left: -5px;
     top: 50%;
     transform: translateY(-50%);
+}
+
+path {
+    stroke: red !important;
+    stroke-width: 2px !important;
+}
+
+.delete-circle {
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    z-index: 10;
+    /* Center the circle */
+    transform: translate(-50%, -50%);
+    /* Optional: Add hover effect */
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.delete-circle:hover {
+    background-color: darkred;
+    transform: translate(-50%, -50%) scale(1.1);
 }
