@@ -84,72 +84,74 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Initializes jsPlumb instance and sets global configuration.
  */
-function initializeJsPlumb() {
-    const mappings = edgeMappings(); // Get the edge mappings
+    function initializeJsPlumb() {
+        const mappings = edgeMappings();
 
-    // Create jsPlumb instance
-    jsPlumbInstance = jsPlumb.getInstance({
-        Container: "canvas-container",
-        Connector: ['Bezier', { curviness: 50 }],
-        Endpoint: ['Dot', { radius: 5 }],
-        PaintStyle: mappings[EDGE_TYPE_PLAIN].paintStyle, // Use the paint style from mappings
-        EndpointStyle: { fill: '#007BFF' },
-        ConnectionOverlays: [
-            ['Arrow', { location: 1, width: 10, length: 10 }]
-        ],
-        ConnectionsDetachable: true, // Enable detaching connections
-        ReattachConnections: true    // Allow reattaching to other endpoints
-    });
+        jsPlumbInstance = jsPlumb.getInstance({
+            Container: "canvas-container",
+            Connector: ['Bezier', { curviness: 50 }],
+            Endpoint: ['Dot', { radius: 5 }],
+            PaintStyle: mappings[EDGE_TYPE_PLAIN].paintStyle,
+            EndpointStyle: { fill: '#007BFF' },
+            ConnectionsDetachable: true,
+            ReattachConnections: true
+        });
 
-    // Handle new connections
-    jsPlumbInstance.bind('connection', function (info) {
-        const connection = info.connection;
+        // Handle new connections
+        jsPlumbInstance.bind('connection', function (info) {
+            const connection = info.connection;
+            
+            // Store default metadata
+            connection.data = {
+                connectorParams: { curviness: 50 },
+                lineStyle: EDGE_TYPE_PLAIN
+            };
 
-        // Store default metadata for the connection
-        connection.data = {
-            connectorParams: { curviness: 50 },
-            lineStyle: EDGE_TYPE_PLAIN
-        };
+            // Add delete overlay
+            addDeleteOverlay(connection);
+            
+            // Enable editing
+            startEditingConnection(connection);
+            
+            // Save to storage
+            saveConnectionsToLocalStorage();
+        });
 
-        // Add a circle overlay for deleting the connection
+        // Handle connection detachment
+        jsPlumbInstance.bind('connectionDetached', function () {
+            saveConnectionsToLocalStorage();
+        });
+
+        window.jsPlumbInstance = jsPlumbInstance;
+    }
+
+    // New function to add delete overlay
+    function addDeleteOverlay(connection) {
         connection.addOverlay([
             'Custom', {
                 create: function () {
                     const circle = document.createElement('div');
                     circle.className = 'delete-circle';
                     circle.style.cursor = 'pointer';
-                    circle.textContent = '×'; // Add text
-                    circle.title = 'Delete connection'; // Tooltip
-        
-                    // Add click event to delete the connection
+                    circle.textContent = '×';
+                    circle.title = 'Delete connection';
+                    
                     circle.addEventListener('click', function (e) {
-                        e.stopPropagation(); // Prevent triggering other events
-                        jsPlumbInstance.deleteConnection(connection);
-                        saveConnectionsToLocalStorage();
+                        e.stopPropagation();
+                        if (confirm('Do you want to delete this connection?')) {
+                            jsPlumbInstance.deleteConnection(connection);
+                            saveConnectionsToLocalStorage();
+                        }
                     });
-        
+                    
                     return circle;
                 },
                 location: 0.5,
                 id: 'deleteCircle'
             }
         ]);
+    }
 
-        // Save connections to localStorage after creating a new connection
-        saveConnectionsToLocalStorage();
-
-        // Enable editing of the connection
-        startEditingConnection(connection);
-    });
-
-    // Handle connection deletions
-    jsPlumbInstance.bind('connectionDetached', function () {
-        saveConnectionsToLocalStorage(); // Update local storage when a connection is removed
-    });
-
-    // Export jsPlumb instance globally
-    window.jsPlumbInstance = jsPlumbInstance;
-}
 
 
 // ==================== Nodes ====================
@@ -507,10 +509,12 @@ function addConnectionPoints(node) {
  * Enables deletion of connections on click.
  */
 function enableLineDeletion() {
-    jsPlumbInstance.bind('click', function (connection) {
-        if (confirm('Do you want to delete this connection?')) {
-            jsPlumbInstance.deleteConnection(connection);
-            saveConnectionsToLocalStorage();
+    jsPlumbInstance.bind("click", function(conn, originalEvent) {
+        if (originalEvent.target.className.includes('delete-circle')) {
+            if (confirm('Delete connection?')) {
+                jsPlumbInstance.deleteConnection(conn);
+                saveConnectionsToLocalStorage();
+            }
         }
     });
 }
@@ -544,52 +548,35 @@ function loadConnectionsFromLocalStorage() {
     const savedConnections = JSON.parse(localStorage.getItem('connections'));
     if (savedConnections && Array.isArray(savedConnections)) {
         savedConnections.forEach((conn) => {
-            // Create a new connection
-            const newConnection = jsPlumbInstance.connect({
-                source: conn.sourceId,
-                target: conn.targetId,
-                anchors: conn.anchors,
-                connector: [conn.connectorType || 'Bezier', conn.connectorParams || { curviness: 50 }],
-                paintStyle: edgeMappings()[conn.lineStyle || EDGE_TYPE_PLAIN].connectorStyle,
-                overlays: [
-                    ['Arrow', { location: 1, width: 10, length: 10 }],
-                    ['Custom', {
-                        create: function () {
-                            const circle = document.createElement('div');
-                            circle.className = 'delete-circle';
-                            circle.style.cursor = 'pointer';
-                            circle.textContent = '×'; // Add an '×' symbol or 'Delete' text
-                            circle.title = 'Delete connection'; // Tooltip on hover
+            try {
+                const newConnection = jsPlumbInstance.connect({
+                    source: conn.sourceId,
+                    target: conn.targetId,
+                    anchors: conn.anchors,
+                    connector: [conn.connectorType || 'Bezier', conn.connectorParams || { curviness: 50 }],
+                    paintStyle: edgeMappings()[conn.lineStyle || EDGE_TYPE_PLAIN].connectorStyle
+                });
 
-                            // Add click event to delete the connection
-                            circle.addEventListener('click', function () {
-                                jsPlumbInstance.deleteConnection(newConnection);
-                                saveConnectionsToLocalStorage();
-                            });
+                if (newConnection) {
+                    // Store metadata
+                    newConnection.data = {
+                        connectorParams: conn.connectorParams,
+                        lineStyle: conn.lineStyle || EDGE_TYPE_PLAIN
+                    };
 
-                            return circle;
-                        },
-                        location: 0.5,
-                        id: 'deleteCircle'
-                    }]
-                ]
-            });
-
-            // Restore metadata to the connection
-            newConnection.data = {
-                connectorParams: conn.connectorParams,
-                lineStyle: conn.lineStyle || EDGE_TYPE_PLAIN
-            };
-
-            // Enable editing of the connection
-            startEditingConnection(newConnection);
+                    // Add delete overlay
+                    addDeleteOverlay(newConnection);
+                    
+                    // Enable editing
+                    startEditingConnection(newConnection);
+                }
+            } catch (error) {
+                console.error('Error loading connection:', error);
+            }
         });
-
-        console.log('Connections loaded from localStorage:', savedConnections);
-    } else {
-        console.log('No connections found in localStorage.');
     }
 }
+
 
 
 // ==================== Canvas ====================

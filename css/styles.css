@@ -185,27 +185,34 @@ path {
 }
 
 .delete-circle {
+    background: white;
+    border: 2px solid #007BFF;
+    border-radius: 50%;
     width: 20px;
     height: 20px;
-    background-color: red;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    font-size: 16px;
+    color: #007BFF;
     position: absolute;
-    z-index: 10;
-    /* Center the circle */
     transform: translate(-50%, -50%);
-    /* Optional: Add hover effect */
-    transition: transform 0.2s, background-color 0.2s;
+    z-index: 100;
 }
 
 .delete-circle:hover {
-    background-color: darkred;
-    transform: translate(-50%, -50%) scale(1.1);
+    background: #007BFF;
+    color: white;
+}
+
+.jtk-connector {
+    z-index: 4;
+}
+
+.jtk-endpoint {
+    z-index: 5;
+}
+
+.jtk-overlay {
+    z-index: 6;
 }
