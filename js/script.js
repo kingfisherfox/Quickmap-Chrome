@@ -125,34 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.jsPlumbInstance = jsPlumbInstance;
     }
 
-    // New function to add delete overlay
-    function addDeleteOverlay(connection) {
-        connection.addOverlay([
-            'Custom', {
-                create: function () {
-                    const circle = document.createElement('div');
-                    circle.className = 'delete-circle';
-                    circle.style.cursor = 'pointer';
-                    circle.textContent = '×';
-                    circle.title = 'Delete connection';
-                    
-                    circle.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        if (confirm('Do you want to delete this connection?')) {
-                            jsPlumbInstance.deleteConnection(connection);
-                            saveConnectionsToLocalStorage();
-                        }
-                    });
-                    
-                    return circle;
-                },
-                location: 0.5,
-                id: 'deleteCircle'
-            }
-        ]);
-    }
-
-
 
 // ==================== Nodes ====================
 
@@ -504,21 +476,6 @@ function addConnectionPoints(node) {
     });
 }
 
-
-/**
- * Enables deletion of connections on click.
- */
-function enableLineDeletion() {
-    jsPlumbInstance.bind("click", function(conn, originalEvent) {
-        if (originalEvent.target.className.includes('delete-circle')) {
-            if (confirm('Delete connection?')) {
-                jsPlumbInstance.deleteConnection(conn);
-                saveConnectionsToLocalStorage();
-            }
-        }
-    });
-}
-
 /**
  * Saves the current connections to localStorage.
  */
@@ -564,11 +521,9 @@ function loadConnectionsFromLocalStorage() {
                         lineStyle: conn.lineStyle || EDGE_TYPE_PLAIN
                     };
 
-                    // Add delete overlay
-                    addDeleteOverlay(newConnection);
-                    
-                    // Enable editing
-                    startEditingConnection(newConnection);
+                    // Remove these lines to prevent duplicate overlays
+                    // addDeleteOverlay(newConnection);
+                    // startEditingConnection(newConnection);
                 }
             } catch (error) {
                 console.error('Error loading connection:', error);
@@ -577,7 +532,47 @@ function loadConnectionsFromLocalStorage() {
     }
 }
 
+// Updated addDeleteOverlay function
+function addDeleteOverlay(connection) {
+    connection.addOverlay([
+        'Custom', {
+            create: function () {
+                const circle = document.createElement('div');
+                circle.className = 'delete-circle';
+                circle.style.cursor = 'pointer';
+                circle.textContent = '×';
+                circle.title = 'Delete connection';
 
+                // Make the X bigger
+                circle.style.fontSize = '20px';
+                circle.style.width = '24px';
+                circle.style.height = '24px';
+                circle.style.lineHeight = '24px';
+                circle.style.textAlign = 'center';
+
+                circle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    jsPlumbInstance.detach(connection); // Use detach to delete the connection
+                    saveConnectionsToLocalStorage();
+                });
+
+                return circle;
+            },
+            location: 0.5,
+            id: 'deleteCircle'
+        }
+    ]);
+}
+
+// Updated enableLineDeletion function
+function enableLineDeletion() {
+    jsPlumbInstance.bind("click", function(conn, originalEvent) {
+        if (originalEvent.target.className.includes('delete-circle')) {
+            conn.delete(); // Use conn.delete() instead
+            saveConnectionsToLocalStorage();
+        }
+    });
+}
 
 // ==================== Canvas ====================
 
