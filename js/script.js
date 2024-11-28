@@ -59,12 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeJsPlumb();               // Initialize jsPlumb instance
     setupCanvasInteractions();         // Setup panning and zooming
     setupNodeInteractions();           // Setup node interactions
-    loadNodesFromLocalStorage();       // Load nodes from localStorage
 
-    // Load connections after nodes are fully loaded
-    setTimeout(() => {
+    // Load nodes and then connections
+    loadNodesFromLocalStorage().then(() => {
         loadConnectionsFromLocalStorage();
-    }, 100);
+    });
 
     enableLineDeletion();              // Enable connection deletion
 
@@ -341,15 +340,29 @@ function saveNodesToLocalStorage() {
  * Loads nodes and connections from localStorage and adds them to the canvas.
  */
 function loadNodesFromLocalStorage() {
-    const nodeData = JSON.parse(localStorage.getItem('nodes'));
-    if (nodeData) {
-        nodeData.forEach(data => {
-            addNode(parseFloat(data.left), parseFloat(data.top), data.content, data.width, data.height, data.id);
-        });
-        console.log('Nodes loaded from localStorage:', nodeData);
-    } else {
-        console.log('No nodes found in localStorage.');
-    }
+    return new Promise((resolve, reject) => {
+        const nodeData = JSON.parse(localStorage.getItem('nodes'));
+        if (nodeData) {
+            nodeData.forEach(data => {
+                addNode(parseFloat(data.left), parseFloat(data.top), data.content, data.width, data.height, data.id);
+            });
+            console.log('Nodes loaded from localStorage:', nodeData);
+
+            // Update nodeIdCounter to avoid ID conflicts
+            const nodeIds = nodes.map(node => node.id);
+            const nodeNumbers = nodeIds.map(id => {
+                const parts = id.split('-');
+                const num = parseInt(parts[1], 10);
+                return isNaN(num) ? 0 : num;
+            });
+            nodeIdCounter = Math.max(...nodeNumbers) + 1;
+
+            resolve(); // Resolve the promise after nodes are loaded
+        } else {
+            console.log('No nodes found in localStorage.');
+            resolve(); // Resolve even if no nodes are found
+        }
+    });
 }
 
 // ==================== Connections ====================
@@ -506,24 +519,30 @@ function loadConnectionsFromLocalStorage() {
     if (savedConnections && Array.isArray(savedConnections)) {
         savedConnections.forEach((conn) => {
             try {
-                const newConnection = jsPlumbInstance.connect({
-                    source: conn.sourceId,
-                    target: conn.targetId,
-                    anchors: conn.anchors,
-                    connector: [conn.connectorType || 'Bezier', conn.connectorParams || { curviness: 50 }],
-                    paintStyle: edgeMappings()[conn.lineStyle || EDGE_TYPE_PLAIN].connectorStyle
-                });
+                // Check if source and target elements exist
+                const sourceElement = document.getElementById(conn.sourceId);
+                const targetElement = document.getElementById(conn.targetId);
 
-                if (newConnection) {
-                    // Store metadata
-                    newConnection.data = {
-                        connectorParams: conn.connectorParams,
-                        lineStyle: conn.lineStyle || EDGE_TYPE_PLAIN
-                    };
+                if (sourceElement && targetElement) {
+                    const newConnection = jsPlumbInstance.connect({
+                        source: conn.sourceId,
+                        target: conn.targetId,
+                        anchors: conn.anchors,
+                        connector: [conn.connectorType || 'Bezier', conn.connectorParams || { curviness: 50 }],
+                        paintStyle: edgeMappings()[conn.lineStyle || EDGE_TYPE_PLAIN].connectorStyle
+                    });
 
-                    // Remove these lines to prevent duplicate overlays
-                    // addDeleteOverlay(newConnection);
-                    // startEditingConnection(newConnection);
+                    if (newConnection) {
+                        // Store metadata
+                        newConnection.data = {
+                            connectorParams: conn.connectorParams,
+                            lineStyle: conn.lineStyle || EDGE_TYPE_PLAIN
+                        };
+
+                        // No need to add overlays again, as the 'connection' event handler does this
+                    }
+                } else {
+                    console.warn(`Cannot create connection: Source or target element not found for IDs ${conn.sourceId} and ${conn.targetId}`);
                 }
             } catch (error) {
                 console.error('Error loading connection:', error);
@@ -674,7 +693,9 @@ function clearCanvas() {
 
     // Clear all nodes from the DOM
     nodes.forEach((node) => {
-        canvasContainer.removeChild(node);
+        if (canvasContainer.contains(node)) {
+            canvasContainer.removeChild(node);
+        }
     });
     nodes = [];
 
@@ -687,3 +708,6 @@ function clearCanvas() {
 
     console.log('Canvas and localStorage cleared.');
 }
+
+
+// ==================== image management ====================
