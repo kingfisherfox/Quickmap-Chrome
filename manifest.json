@@ -3,7 +3,6 @@
   "name": "QuickMap Flowchart Creator",
   "description": "Create and edit flowcharts seamlessly.",
   "version": "1.0",
-  "permissions": ["tabs"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },

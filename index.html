@@ -10,7 +10,15 @@
     <!-- Header -->
     <header id="header-bar">
         <h1>QuickMap Flowchart Creator</h1>
-        <button id="clear-btn">Clear</button>
+        <div class="chart-controls">
+            <input id="chart-name-input" type="text" placeholder="Chart name" aria-label="Chart name">
+            <button id="save-chart-btn" type="button">Save</button>
+            <select id="chart-select" aria-label="Saved charts"></select>
+            <button id="load-chart-btn" type="button">Load</button>
+            <button id="delete-chart-btn" type="button">Delete</button>
+            <button id="new-chart-btn" type="button">New</button>
+            <button id="clear-btn" type="button">Clear</button>
+        </div>
         
     </header>
     <!-- Canvas Container -->
@@ -18,6 +26,6 @@
     <!-- Include jsPlumb library locally -->
     <script src="js/jsplumb.min.js"></script>
     <!-- Include your main script -->
-    <script src="js/script.js"></script>
+    <script type="module" src="js/script.js"></script>
 </body>
 </html>

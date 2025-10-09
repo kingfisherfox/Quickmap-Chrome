@@ -29,14 +29,17 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 60px;
     background-color: #007BFF;
     color: white;
     display: flex;
     align-items: center;
-    padding: 0 20px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    padding: 10px 20px;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000;
+    box-sizing: border-box;
 }
 
 #header-bar h1 {
@@ -44,6 +47,7 @@ body {
     font-size: 20px;
     font-weight: bold;
     font-family: 'Poppins', sans-serif;
+    flex: 0 0 auto;
 }
 
 #header-bar #clear-btn {
@@ -52,7 +56,6 @@ body {
     border: none;
     border-radius: 4px;
     padding: 8px 12px;
-    margin-left: 24px;
     font-size: 14px;
     cursor: pointer;
     font-family: 'Poppins', sans-serif;
@@ -62,6 +65,69 @@ body {
 #header-bar #clear-btn:hover {
     background-color: #E63939;
 
+}
+
+.chart-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 1 1 420px;
+    max-width: 100%;
+    flex-wrap: wrap;
+}
+
+.chart-controls input,
+.chart-controls select {
+    border: 1px solid #d0d7de;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    background-color: #ffffff;
+    min-height: 34px;
+    flex: 1 1 160px;
+    min-width: 120px;
+}
+
+.chart-controls select {
+    min-width: 180px;
+    flex: 1 1 180px;
+}
+
+.chart-controls button {
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    background-color: #007BFF;
+    color: #ffffff;
+    flex: 0 0 auto;
+}
+
+.chart-controls button:hover {
+    background-color: #0062cc;
+}
+
+.chart-controls #save-chart-btn {
+    background-color: #28a745;
+}
+
+.chart-controls #save-chart-btn:hover {
+    background-color: #1f8536;
+}
+
+.chart-controls #delete-chart-btn,
+.chart-controls #clear-btn {
+    background-color: #FF4D4D;
+}
+
+.chart-controls #delete-chart-btn:hover,
+.chart-controls #clear-btn:hover {
+    background-color: #E63939;
 }
 
 
@@ -77,8 +143,8 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     user-select: none;
-    resize: both;
-    overflow: auto;
+    resize: none;
+    overflow: visible;
 }
 
 /* Top bar for drag handle and delete button */
@@ -123,6 +189,12 @@ body {
     font-family: inherit;
     font-size: 14px;
     box-sizing: border-box;
+    overflow: auto;
+    scrollbar-width: none;
+}
+
+.node-textarea::-webkit-scrollbar {
+    display: none;
 }
 
 /* Resize handle at the bottom-right corner of the node */
@@ -150,35 +222,53 @@ body {
 
 .connection-point {
     position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: #929292;
+    width: 16px;
+    height: 16px;
+    background-color: #007BFF;
+    border: 2px solid #ffffff;
     border-radius: 50%;
     cursor: pointer;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+.connection-point::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .connection-point.top {
-    top: -5px;
+    top: 0;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
 }
 
 .connection-point.right {
-    right: -5px;
+    right: 0;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translate(50%, -50%);
 }
 
 .connection-point.bottom {
-    bottom: -5px;
+    bottom: 0;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, 50%);
 }
 
 .connection-point.left {
-    left: -5px;
+    left: 0;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translate(-50%, -50%);
 }
 
 path {
