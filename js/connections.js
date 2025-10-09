@@ -18,6 +18,10 @@ export function initializeJsPlumb() {
 
     state.jsPlumbInstance.bind('connection', (info) => {
         const connection = info.connection;
+        console.info('Connection created', {
+            sourceId: connection.sourceId,
+            targetId: connection.targetId,
+        });
 
         connection.data = connection.data || {};
         connection.data.connectorParams = connection.data.connectorParams || { curviness: 50 };
@@ -33,7 +37,25 @@ export function initializeJsPlumb() {
         }
     });
 
-    state.jsPlumbInstance.bind('connectionDetached', () => {
+    state.jsPlumbInstance.bind('connectionDragStart', (connection) => {
+        console.info('Connection drag start', {
+            sourceId: connection?.sourceId,
+            targetId: connection?.targetId,
+        });
+    });
+
+    state.jsPlumbInstance.bind('connectionDragStop', (connection) => {
+        console.info('Connection drag stop', {
+            sourceId: connection?.sourceId,
+            targetId: connection?.targetId,
+        });
+    });
+
+    state.jsPlumbInstance.bind('connectionDetached', (info) => {
+        console.info('Connection detached', {
+            sourceId: info?.sourceId,
+            targetId: info?.targetId,
+        });
         if (!state.isRestoring) {
             markDirty();
         }

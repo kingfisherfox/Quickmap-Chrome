@@ -232,7 +232,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 5;
+    z-index: 10;
+    pointer-events: none;
 }
 
 .connection-point::after {
@@ -245,6 +246,26 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.connection-point .jtk-endpoint {
+    position: absolute !important;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    cursor: pointer;
+    z-index: 2;
+    pointer-events: auto;
+}
+
+.connection-point .jtk-endpoint canvas,
+.connection-point .jtk-endpoint svg {
+    width: 100% !important;
+    height: 100% !important;
 }
 
 .connection-point.top {

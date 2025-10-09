@@ -20,6 +20,7 @@ export function addNode(
     node.style.width = width;
     node.style.height = height;
     node.id = id || `node-${state.nodeIdCounter++}`;
+    node.setAttribute('tabindex', '0');
 
     const topBar = document.createElement('div');
     topBar.className = 'node-top-bar';
@@ -49,6 +50,8 @@ export function addNode(
     node.appendChild(textarea);
     state.canvasContainer.appendChild(node);
     state.nodes.push(node);
+
+    console.info('Node added', { id: node.id, x, y });
 
     makeNodeDraggable(node, dragHandle);
     makeNodeResizable(node);
@@ -85,6 +88,7 @@ export function deleteNode(node) {
     state.nodes = state.nodes.filter((current) => current !== node);
 
     markDirty();
+    console.info('Node deleted', { id: node.id });
 }
 
 export function serializeNodes() {
@@ -216,39 +220,23 @@ function addConnectionPoints(node) {
         circle.className = `connection-point ${position.toLowerCase()}`;
         node.appendChild(circle);
 
-        state.jsPlumbInstance?.addEndpoint(
-            node,
-            {
-                anchor: position,
-                endpoint: 'Dot',
-                isSource: true,
-                isTarget: true,
-                maxConnections: -1,
-                allowReattach: true,
-                connector: ['Bezier', { curviness: 50 }],
-                connectorStyle: mappings[EDGE_TYPE_PLAIN].connectorStyle,
-                connectorOverlays: [
-                    ['Arrow', { location: 1, width: 10, length: 10 }],
-                    [
-                        'Custom',
-                        {
-                            create() {
-                                const midpoint = document.createElement('div');
-                                midpoint.className = 'midpoint';
-                                return midpoint;
-                            },
-                            location: 0.5,
-                            id: 'midpoint',
-                        },
-                    ],
-                ],
-                cssClass: mappings[EDGE_TYPE_PLAIN].cssClass,
-            },
-            {
-                cssClass: 'connection-point-endpoint',
-                endpointStyle: { fill: '#007BFF' },
-                parent: circle,
-            },
-        );
+        const endpointOptions = {
+            anchor: position,
+            endpoint: ['Dot', { radius: 6 }],
+            isSource: true,
+            isTarget: true,
+            maxConnections: -1,
+            allowReattach: true,
+            connector: ['Bezier', { curviness: 50 }],
+            connectorStyle: mappings[EDGE_TYPE_PLAIN].connectorStyle,
+            cssClass: mappings[EDGE_TYPE_PLAIN].cssClass,
+            parameters: { parentPointEl: circle },
+        };
+
+        state.jsPlumbInstance?.addEndpoint(node, endpointOptions, {
+            cssClass: 'connection-point-endpoint',
+            endpointStyle: { fill: '#007BFF' },
+            parent: circle,
+        });
     });
 }
