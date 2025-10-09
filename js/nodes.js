@@ -48,7 +48,8 @@ export function addNode(
     textarea.className = 'node-textarea';
 
     node.appendChild(textarea);
-    state.canvasContainer.appendChild(node);
+    const parent = state.canvasContent || state.canvasContainer;
+    parent?.appendChild(node);
     state.nodes.push(node);
 
     console.info('Node added', { id: node.id, x, y });
@@ -81,8 +82,9 @@ export function setupNodeInteractions() {
 export function deleteNode(node) {
     state.jsPlumbInstance?.remove(node.id);
 
-    if (state.canvasContainer.contains(node)) {
-        state.canvasContainer.removeChild(node);
+    const parent = state.canvasContent || state.canvasContainer;
+    if (parent?.contains(node)) {
+        parent.removeChild(node);
     }
 
     state.nodes = state.nodes.filter((current) => current !== node);
@@ -230,21 +232,6 @@ function addConnectionPoints(node) {
             connector: ['Bezier', { curviness: 50 }],
             connectorStyle: mappings[EDGE_TYPE_PLAIN].connectorStyle,
             cssClass: mappings[EDGE_TYPE_PLAIN].cssClass,
-            connectorOverlays: [
-                ['Arrow', { location: 1, width: 10, length: 10 }],
-                [
-                    'Custom',
-                    {
-                        create() {
-                            const midpoint = document.createElement('div');
-                            midpoint.className = 'midpoint';
-                            return midpoint;
-                        },
-                        location: 0.5,
-                        id: 'midpoint',
-                    },
-                ],
-            ],
             parameters: { parentPointEl: circle },
         };
 

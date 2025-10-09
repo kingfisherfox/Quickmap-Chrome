@@ -66,17 +66,29 @@ export function setupCanvasInteractions() {
 }
 
 export function updateCanvasTransform() {
-    state.canvasContainer.style.transform = `translate(${state.panOffsetX}px, ${state.panOffsetY}px) scale(${state.scale})`;
-    state.canvasContainer.style.transformOrigin = '0 0';
-    state.canvasContainer.style.backgroundSize = `${20 * state.scale}px ${20 * state.scale}px`;
+    if (state.canvasTransform) {
+        state.canvasTransform.style.transform = `translate(${state.panOffsetX}px, ${state.panOffsetY}px)`;
+        state.canvasTransform.style.transformOrigin = '0 0';
+    }
+
+    if (state.canvasContent) {
+        state.canvasContent.style.transform = `scale(${state.scale})`;
+        state.canvasContent.style.transformOrigin = '0 0';
+        state.canvasContent.style.backgroundSize = `${20 * state.scale}px ${20 * state.scale}px`;
+    }
+
+    if (state.canvasContainer) {
+        state.canvasContainer.style.backgroundSize = `${20 * state.scale}px ${20 * state.scale}px`;
+    }
 }
 
 export function clearCanvas({ markDirty: shouldMarkDirty = true } = {}) {
     state.jsPlumbInstance?.deleteEveryEndpoint();
 
+    const parent = state.canvasContent || state.canvasContainer;
     state.nodes.forEach((node) => {
-        if (state.canvasContainer.contains(node)) {
-            state.canvasContainer.removeChild(node);
+        if (parent?.contains(node)) {
+            parent.removeChild(node);
         }
     });
     state.nodes = [];

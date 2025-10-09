@@ -3,6 +3,8 @@
 export const state = {
     nodes: [],
     canvasContainer: null,
+    canvasTransform: null,
+    canvasContent: null,
     jsPlumbInstance: null,
     nodeIdCounter: 0,
     panOffsetX: 0,

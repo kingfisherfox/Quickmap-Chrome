@@ -7,7 +7,7 @@ export function initializeJsPlumb() {
     const mappings = edgeMappings();
 
     state.jsPlumbInstance = jsPlumb.getInstance({
-        Container: 'canvas-container',
+        Container: 'canvas-transform',
         Connector: ['Bezier', { curviness: 50 }],
         Endpoint: ['Dot', { radius: 5 }],
         PaintStyle: mappings[EDGE_TYPE_PLAIN].paintStyle,
@@ -27,6 +27,8 @@ export function initializeJsPlumb() {
         connection.data.connectorParams = connection.data.connectorParams || { curviness: 50 };
         connection.data.lineStyle = connection.data.lineStyle || EDGE_TYPE_PLAIN;
 
+        ensureArrowOverlay(connection);
+        ensureMidpointOverlay(connection);
         if (!connection.getOverlay('deleteCircle')) {
             addDeleteOverlay(connection);
         }
@@ -141,7 +143,7 @@ export function loadConnections(connectionData = []) {
 
 function startEditingConnection(connection) {
     const mappings = edgeMappings();
-    const midpointOverlay = connection.getOverlay('midpoint');
+    const midpointOverlay = ensureMidpointOverlay(connection);
     if (!midpointOverlay) return;
 
     const midpointElement = midpointOverlay.getElement();
@@ -233,4 +235,36 @@ function addDeleteOverlay(connection) {
             id: 'deleteCircle',
         },
     ]);
+}
+
+function ensureArrowOverlay(connection) {
+    if (connection.getOverlay('arrowOverlay')) return connection.getOverlay('arrowOverlay');
+    return connection.addOverlay([
+        'Arrow',
+        {
+            id: 'arrowOverlay',
+            location: 1,
+            width: 10,
+            length: 10,
+        },
+    ]);
+}
+
+function ensureMidpointOverlay(connection) {
+    let overlay = connection.getOverlay('midpoint');
+    if (!overlay) {
+        overlay = connection.addOverlay([
+            'Custom',
+            {
+                create() {
+                    const midpoint = document.createElement('div');
+                    midpoint.className = 'midpoint';
+                    return midpoint;
+                },
+                location: 0.5,
+                id: 'midpoint',
+            },
+        ]);
+    }
+    return overlay;
 }
