@@ -30,6 +30,8 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
+    min-width: 100vw;
+    min-height: 100vh;
     transform-origin: 0 0;
     overflow: visible;
 }
@@ -152,6 +154,17 @@ body {
 .chart-controls #delete-chart-btn:hover,
 .chart-controls #clear-btn:hover {
     background-color: #E63939;
+}
+
+.chart-controls #settings-btn {
+    background-color: #343a40;
+    font-size: 18px;
+    line-height: 1;
+    padding: 8px 10px;
+}
+
+.chart-controls #settings-btn:hover {
+    background-color: #1f2327;
 }
 
 
@@ -290,6 +303,94 @@ body {
 .connection-point .jtk-endpoint svg {
     width: 100% !important;
     height: 100% !important;
+}
+
+#settings-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px;
+    max-width: 80vw;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    z-index: 1500;
+    border-left: 1px solid #d0d7de;
+}
+
+#settings-drawer.open {
+    transform: translateX(0);
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #d0d7de;
+}
+
+.settings-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.settings-header button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.settings-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.settings-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+}
+
+.settings-field select {
+    border: 1px solid #d0d7de;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 14px;
+}
+
+.settings-field.toggle {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-field.toggle span {
+    font-size: 14px;
+}
+
+.connection-animated path {
+    stroke-dasharray: 6;
+    animation: connection-dash 1.2s linear infinite;
+}
+
+@keyframes connection-dash {
+    from {
+        stroke-dashoffset: 0;
+    }
+    to {
+        stroke-dashoffset: -24;
+    }
 }
 
 .connection-point.top {

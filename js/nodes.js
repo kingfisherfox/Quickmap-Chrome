@@ -48,7 +48,7 @@ export function addNode(
     textarea.className = 'node-textarea';
 
     node.appendChild(textarea);
-    const parent = state.canvasContent || state.canvasContainer;
+    const parent = state.canvasTransform || state.canvasContainer;
     parent?.appendChild(node);
     state.nodes.push(node);
 
@@ -82,7 +82,7 @@ export function setupNodeInteractions() {
 export function deleteNode(node) {
     state.jsPlumbInstance?.remove(node.id);
 
-    const parent = state.canvasContent || state.canvasContainer;
+    const parent = state.canvasTransform || state.canvasContainer;
     if (parent?.contains(node)) {
         parent.removeChild(node);
     }

@@ -18,6 +18,10 @@ export const state = {
     currentChartName: '',
     isDirty: false,
     isRestoring: false,
+    connectionSettings: {
+        lineStyle: 'plain',
+        animated: false,
+    },
 };
 
 export function markDirty() {

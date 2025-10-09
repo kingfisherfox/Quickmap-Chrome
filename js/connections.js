@@ -1,7 +1,7 @@
 // connections.js
 
 import { state, markDirty } from './state.js';
-import { edgeMappings, EDGE_TYPE_PLAIN } from './edgeStyles.js';
+import { edgeMappings, EDGE_TYPE_PLAIN, EDGE_TYPE_DASHED } from './edgeStyles.js';
 
 export function initializeJsPlumb() {
     const mappings = edgeMappings();
@@ -32,6 +32,7 @@ export function initializeJsPlumb() {
         if (!connection.getOverlay('deleteCircle')) {
             addDeleteOverlay(connection);
         }
+        applySettingsToConnection(connection);
         startEditingConnection(connection);
 
         if (!state.isRestoring) {
@@ -129,6 +130,7 @@ export function loadConnections(connectionData = []) {
                             edgeMappings()[storedConnection.lineStyle || EDGE_TYPE_PLAIN].connectorStyle,
                         );
                     }
+                    applySettingsToConnection(newConnection);
                 }
             } catch (error) {
                 console.error('Error loading connection:', error);
@@ -267,4 +269,30 @@ function ensureMidpointOverlay(connection) {
         ]);
     }
     return overlay;
+}
+
+export function applySettingsToConnection(connection, options = {}) {
+    const { skipStyle = false } = options;
+    const mappings = edgeMappings();
+    const { lineStyle, animated } = state.connectionSettings;
+
+    const styleKey = lineStyle || EDGE_TYPE_PLAIN;
+    if (!skipStyle && mappings[styleKey]) {
+        connection.setPaintStyle(mappings[styleKey].connectorStyle);
+        connection.data.lineStyle = styleKey;
+    }
+
+    if (animated) {
+        connection.addClass('connection-animated');
+    } else {
+        connection.removeClass('connection-animated');
+    }
+}
+
+export function applySettingsToAllConnections() {
+    if (!state.jsPlumbInstance) return;
+    state.jsPlumbInstance.getAllConnections().forEach((connection) => {
+        applySettingsToConnection(connection);
+    });
+    state.jsPlumbInstance.repaintEverything();
 }

@@ -5,6 +5,7 @@ import { setupCanvasInteractions, clearCanvas, updateCanvasTransform } from './c
 import { initializeJsPlumb, enableLineDeletion } from './connections.js';
 import { setupNodeInteractions } from './nodes.js';
 import { initializeChartControls } from './charts.js';
+import { initializeSettingsPanel } from './settings.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const canvasContainer = document.getElementById('canvas-container');
@@ -13,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     state.canvasContainer = canvasContainer;
     state.canvasTransform = canvasTransform;
     state.canvasContent = canvasContent;
-    window.canvasContainer = canvasContent;
+    window.canvasContainer = canvasTransform;
 
     initializeJsPlumb();
     setupCanvasInteractions();
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     enableLineDeletion();
     initializeChartControls();
+    initializeSettingsPanel();
     updateCanvasTransform();
 
     const clearButton = document.getElementById('clear-btn');
