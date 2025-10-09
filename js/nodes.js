@@ -230,6 +230,21 @@ function addConnectionPoints(node) {
             connector: ['Bezier', { curviness: 50 }],
             connectorStyle: mappings[EDGE_TYPE_PLAIN].connectorStyle,
             cssClass: mappings[EDGE_TYPE_PLAIN].cssClass,
+            connectorOverlays: [
+                ['Arrow', { location: 1, width: 10, length: 10 }],
+                [
+                    'Custom',
+                    {
+                        create() {
+                            const midpoint = document.createElement('div');
+                            midpoint.className = 'midpoint';
+                            return midpoint;
+                        },
+                        location: 0.5,
+                        id: 'midpoint',
+                    },
+                ],
+            ],
             parameters: { parentPointEl: circle },
         };
 
