@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "QuickMap Flowchart Creator",
+  "name": "QuickMap",
   "description": "Create and edit flowcharts seamlessly.",
   "version": "1.1",
   "content_security_policy": {
@@ -15,6 +15,6 @@
     "service_worker": "js/background.js"
   },
   "action": {
-    "default_title": "QuickMap Flowchart Creator"
+    "default_title": "QuickMap"
   }
 }

@@ -3,7 +3,8 @@
 import { state, setCurrentChart, markDirty, resetDirty } from './state.js';
 import { clearCanvas, updateCanvasTransform } from './canvas.js';
 import { serializeNodes, loadNodes } from './nodes.js';
-import { serializeConnections, loadConnections } from './connections.js';
+import { serializeConnections, loadConnections, applySettingsToAllConnections } from './connections.js';
+import { applyStateToControls } from './settings.js';
 
 const STORAGE_KEY = 'quickmapCharts';
 const LAST_CHART_KEY = 'quickmapLastChartId';
@@ -114,6 +115,9 @@ export function handleSaveChart() {
 
     const serializedNodes = serializeNodes();
     const serializedConnections = serializeConnections();
+    const serializedSettings = {
+        animated: !!state.connectionSettings.animated,
+    };
 
     const charts = readCharts();
     const timestamp = Date.now();
@@ -124,6 +128,7 @@ export function handleSaveChart() {
         name: chartName,
         nodes: serializedNodes,
         connections: serializedConnections,
+        settings: serializedSettings,
         updatedAt: timestamp,
     };
 
@@ -188,6 +193,10 @@ export function handleLoadChart(chartId, options = {}) {
 
     loadNodes(chart.nodes || []);
     loadConnections(chart.connections || []);
+
+    state.connectionSettings.animated = !!chart.settings?.animated;
+    applyStateToControls();
+    applySettingsToAllConnections();
 
     resetDirty();
     localStorage.setItem(LAST_CHART_KEY, chart.id);

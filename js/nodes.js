@@ -2,6 +2,7 @@
 
 import { state, markDirty } from './state.js';
 import { edgeMappings, EDGE_TYPE_PLAIN } from './edgeStyles.js';
+import { applySettingsToAllConnections } from './connections.js';
 
 export function addNode(
     x,
@@ -162,6 +163,7 @@ function makeNodeDraggable(node, handle) {
         node.isDragging = false;
         document.body.style.cursor = 'default';
         markDirty();
+        applySettingsToAllConnections();
     });
 }
 
@@ -194,6 +196,7 @@ function makeNodeResizable(node) {
         node.isResizing = false;
         document.body.style.cursor = 'default';
         markDirty();
+        applySettingsToAllConnections();
 
         document.removeEventListener('mousemove', resizeMouseMove);
         document.removeEventListener('mouseup', stopResizing);

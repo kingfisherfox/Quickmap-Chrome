@@ -19,7 +19,6 @@ export const state = {
     isDirty: false,
     isRestoring: false,
     connectionSettings: {
-        lineStyle: 'plain',
         animated: false,
     },
 };

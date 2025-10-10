@@ -52,6 +52,9 @@ export function initializeJsPlumb() {
             sourceId: connection?.sourceId,
             targetId: connection?.targetId,
         });
+        if (connection) {
+            applySettingsToConnection(connection);
+        }
     });
 
     state.jsPlumbInstance.bind('connectionDetached', (info) => {
@@ -125,11 +128,6 @@ export function loadConnections(connectionData = []) {
                         connectorParams: storedConnection.connectorParams || { curviness: 50 },
                         lineStyle: storedConnection.lineStyle || EDGE_TYPE_PLAIN,
                     };
-                    if (storedConnection.lineStyle) {
-                        newConnection.setPaintStyle(
-                            edgeMappings()[storedConnection.lineStyle || EDGE_TYPE_PLAIN].connectorStyle,
-                        );
-                    }
                     applySettingsToConnection(newConnection);
                 }
             } catch (error) {
@@ -271,21 +269,28 @@ function ensureMidpointOverlay(connection) {
     return overlay;
 }
 
-export function applySettingsToConnection(connection, options = {}) {
-    const { skipStyle = false } = options;
+export function applySettingsToConnection(connection) {
     const mappings = edgeMappings();
-    const { lineStyle, animated } = state.connectionSettings;
+    const animated = !!state.connectionSettings.animated;
 
-    const styleKey = lineStyle || EDGE_TYPE_PLAIN;
-    if (!skipStyle && mappings[styleKey]) {
+    const styleKey = animated ? EDGE_TYPE_DASHED : EDGE_TYPE_PLAIN;
+    if (mappings[styleKey]) {
         connection.setPaintStyle(mappings[styleKey].connectorStyle);
+        if (mappings[styleKey].cssClass) {
+            connection.removeClass(mappings[EDGE_TYPE_PLAIN].cssClass);
+            connection.removeClass(mappings[EDGE_TYPE_DASHED].cssClass);
+            connection.addClass(mappings[styleKey].cssClass);
+        }
         connection.data.lineStyle = styleKey;
     }
 
     if (animated) {
         connection.addClass('connection-animated');
+        updateAnimationDirection(connection);
     } else {
         connection.removeClass('connection-animated');
+        connection.removeClass('horizontal-flow');
+        connection.removeClass('reverse');
     }
 }
 
@@ -295,4 +300,47 @@ export function applySettingsToAllConnections() {
         applySettingsToConnection(connection);
     });
     state.jsPlumbInstance.repaintEverything();
+}
+
+function updateAnimationDirection(connection) {
+    const sourcePoint = getEndpointCenter(connection.endpoints?.[0]);
+    const targetPoint = getEndpointCenter(connection.endpoints?.[1]);
+    if (!sourcePoint || !targetPoint) return;
+
+    const dx = targetPoint.x - sourcePoint.x;
+    const dy = targetPoint.y - sourcePoint.y;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+
+    connection.removeClass('horizontal-flow');
+    connection.removeClass('vertical-flow');
+    connection.removeClass('reverse');
+
+    if (absDx === 0 && absDy === 0) {
+        connection.addClass('horizontal-flow');
+        return;
+    }
+
+    if (absDx >= absDy) {
+        connection.addClass('horizontal-flow');
+        if (dx >= 0) {
+            connection.addClass('reverse');
+        }
+    } else {
+        connection.addClass('vertical-flow');
+        if (dy >= 0) {
+            connection.addClass('reverse');
+        }
+    }
+}
+
+function getEndpointCenter(endpoint) {
+    if (!endpoint) return null;
+    const canvasEl = endpoint.canvas || endpoint.endpoint?.canvas;
+    if (!canvasEl) return null;
+    const rect = canvasEl.getBoundingClientRect();
+    return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+    };
 }
