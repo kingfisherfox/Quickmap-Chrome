@@ -1,6 +1,8 @@
 // canvas.js
 
 import { state, markDirty } from './state.js';
+import { updateCanvasBounds } from './nodes.js';
+import { queueConnectionRefresh, handleNodeLayoutChange, clearConnections } from './connections.js';
 
 export function setupCanvasInteractions() {
     document.addEventListener('keydown', (event) => {
@@ -36,7 +38,7 @@ export function setupCanvasInteractions() {
         state.panStartY = event.pageY;
 
         updateCanvasTransform();
-        state.jsPlumbInstance?.repaintEverything();
+        handleNodeLayoutChange();
     });
 
     document.addEventListener('mouseup', () => {
@@ -64,14 +66,12 @@ export function setupCanvasInteractions() {
         state.panOffsetY -= dy * (state.scale - previousScale);
 
         updateCanvasTransform();
-        state.jsPlumbInstance?.setZoom(state.scale);
-        state.jsPlumbInstance?.repaintEverything();
     });
 }
 
 export function updateCanvasTransform() {
     if (state.canvasTransform) {
-        state.canvasTransform.style.transform = `translate(${state.panOffsetX}px, ${state.panOffsetY}px)`;
+        state.canvasTransform.style.transform = `translate(${state.panOffsetX}px, ${state.panOffsetY}px) scale(${state.scale})`;
         state.canvasTransform.style.transformOrigin = '0 0';
     }
 
@@ -80,15 +80,16 @@ export function updateCanvasTransform() {
     }
 
     if (state.canvasContent) {
-        state.canvasContent.style.transform = `scale(${state.scale})`;
-        state.canvasContent.style.transformOrigin = '0 0';
+        state.canvasContent.style.transform = 'none';
     }
+
+    queueConnectionRefresh();
 }
 
 export function clearCanvas({ markDirty: shouldMarkDirty = true } = {}) {
-    state.jsPlumbInstance?.deleteEveryEndpoint();
+    clearConnections();
 
-    const parent = state.canvasTransform || state.canvasContainer;
+    const parent = state.canvasContent || state.canvasTransform || state.canvasContainer;
     state.nodes.forEach((node) => {
         if (parent?.contains(node)) {
             parent.removeChild(node);
@@ -97,7 +98,8 @@ export function clearCanvas({ markDirty: shouldMarkDirty = true } = {}) {
     state.nodes = [];
     state.nodeIdCounter = 0;
 
-    state.jsPlumbInstance?.repaintEverything();
+    updateCanvasBounds();
+    queueConnectionRefresh();
     if (shouldMarkDirty) {
         markDirty();
     }

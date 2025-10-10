@@ -2,7 +2,7 @@
 
 import { state } from './state.js';
 import { setupCanvasInteractions, clearCanvas, updateCanvasTransform } from './canvas.js';
-import { initializeJsPlumb, enableLineDeletion } from './connections.js';
+import { initializeConnectionLayer } from './connections.js';
 import { setupNodeInteractions, initializeImagePasteHandling } from './nodes.js';
 import { initializeChartControls } from './charts.js';
 import { initializeSettingsPanel } from './settings.js';
@@ -16,12 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     state.canvasContent = canvasContent;
     window.canvasContainer = canvasTransform;
 
-    initializeJsPlumb();
+    initializeConnectionLayer();
     setupCanvasInteractions();
     setupNodeInteractions();
     initializeImagePasteHandling();
 
-    enableLineDeletion();
     initializeChartControls();
     initializeSettingsPanel();
     updateCanvasTransform();

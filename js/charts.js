@@ -3,7 +3,13 @@
 import { state, setCurrentChart, markDirty, resetDirty } from './state.js';
 import { clearCanvas, updateCanvasTransform } from './canvas.js';
 import { serializeNodes, loadNodes } from './nodes.js';
-import { serializeConnections, loadConnections, applySettingsToAllConnections } from './connections.js';
+import {
+    serializeConnections,
+    loadConnections,
+    applySettingsToAllConnections,
+    clearConnections,
+    queueConnectionRefresh,
+} from './connections.js';
 import { applyStateToControls } from './settings.js';
 
 const STORAGE_KEY = 'quickmapCharts';
@@ -96,7 +102,6 @@ export function startNewChart() {
     state.panOffsetY = 0;
     state.scale = 1;
     updateCanvasTransform();
-    state.jsPlumbInstance?.setZoom(1);
 
     setCurrentChart(null, '');
     suppressNameDirty = true;
@@ -184,15 +189,16 @@ export function handleLoadChart(chartId, options = {}) {
     state.panOffsetY = 0;
     state.scale = 1;
     updateCanvasTransform();
-    state.jsPlumbInstance?.setZoom(1);
 
     setCurrentChart(chart.id, chart.name);
     suppressNameDirty = true;
     nameInputElement.value = chart.name;
     suppressNameDirty = false;
 
+    clearConnections();
     loadNodes(chart.nodes || []);
     loadConnections(chart.connections || []);
+    queueConnectionRefresh();
 
     state.connectionSettings.animated = !!chart.settings?.animated;
     applyStateToControls();

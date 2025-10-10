@@ -1,8 +1,14 @@
 // nodes.js
 
 import { state, markDirty } from './state.js';
-import { edgeMappings, EDGE_TYPE_PLAIN } from './edgeStyles.js';
-import { applySettingsToAllConnections } from './connections.js';
+import {
+    applySettingsToAllConnections,
+    registerAnchor,
+    removeConnectionsForNode,
+    handleNodeLayoutChange,
+    queueConnectionRefresh,
+    updateConnectionLayerSize,
+} from './connections.js';
 
 const NODE_TYPE_TEXT = 'text';
 const NODE_TYPE_IMAGE = 'image';
@@ -69,7 +75,7 @@ export function addNode(
         textarea.className = 'node-textarea';
         node.appendChild(textarea);
     }
-    const parent = state.canvasTransform || state.canvasContainer;
+    const parent = state.canvasContent || state.canvasTransform || state.canvasContainer;
     parent?.appendChild(node);
     state.nodes.push(node);
 
@@ -89,7 +95,7 @@ export function addNode(
         });
     }
 
-    state.jsPlumbInstance?.repaintEverything();
+    updateCanvasBounds();
 }
 
 export function setupNodeInteractions() {
@@ -107,9 +113,9 @@ export function initializeImagePasteHandling() {
 }
 
 export function deleteNode(node) {
-    state.jsPlumbInstance?.remove(node.id);
+    removeConnectionsForNode(node.id);
 
-    const parent = state.canvasTransform || state.canvasContainer;
+    const parent = state.canvasContent || state.canvasTransform || state.canvasContainer;
     if (parent?.contains(node)) {
         parent.removeChild(node);
     }
@@ -118,6 +124,8 @@ export function deleteNode(node) {
 
     markDirty();
     console.info('Node deleted', { id: node.id });
+
+    updateCanvasBounds();
 }
 
 export function serializeNodes() {
@@ -183,7 +191,7 @@ export function loadNodes(nodeData = []) {
         state.nodeIdCounter = Math.max(...nodeNumbers, 0) + 1;
     }
 
-    state.jsPlumbInstance?.repaintEverything();
+    updateCanvasBounds();
 }
 
 function makeNodeDraggable(node, handle) {
@@ -206,7 +214,7 @@ function makeNodeDraggable(node, handle) {
         const y = (event.pageY - offsetY - state.panOffsetY) / state.scale;
         node.style.left = `${x}px`;
         node.style.top = `${y}px`;
-        state.jsPlumbInstance?.repaintEverything();
+        handleNodeLayoutChange();
     });
 
     document.addEventListener('mouseup', () => {
@@ -216,6 +224,8 @@ function makeNodeDraggable(node, handle) {
         document.body.style.cursor = 'default';
         markDirty();
         applySettingsToAllConnections();
+        updateCanvasBounds();
+        handleNodeLayoutChange();
     });
 }
 
@@ -239,7 +249,7 @@ function makeNodeResizable(node) {
 
         node.style.width = `${newWidth}px`;
         node.style.height = `${newHeight}px`;
-        state.jsPlumbInstance?.repaintEverything();
+        handleNodeLayoutChange();
     };
 
     const stopResizing = () => {
@@ -249,6 +259,8 @@ function makeNodeResizable(node) {
         document.body.style.cursor = 'default';
         markDirty();
         applySettingsToAllConnections();
+        handleNodeLayoutChange();
+        updateCanvasBounds();
 
         document.removeEventListener('mousemove', resizeMouseMove);
         document.removeEventListener('mouseup', stopResizing);
@@ -269,33 +281,50 @@ function makeNodeResizable(node) {
 }
 
 function addConnectionPoints(node) {
-    const mappings = edgeMappings();
     const connectionPositions = ['Top', 'Right', 'Bottom', 'Left'];
 
     connectionPositions.forEach((position) => {
         const circle = document.createElement('div');
         circle.className = `connection-point ${position.toLowerCase()}`;
         node.appendChild(circle);
-
-        const endpointOptions = {
-            anchor: position,
-            endpoint: ['Dot', { radius: 6 }],
-            isSource: true,
-            isTarget: true,
-            maxConnections: -1,
-            allowReattach: true,
-            connector: ['Bezier', { curviness: 50 }],
-            connectorStyle: mappings[EDGE_TYPE_PLAIN].connectorStyle,
-            cssClass: mappings[EDGE_TYPE_PLAIN].cssClass,
-            parameters: { parentPointEl: circle },
-        };
-
-        state.jsPlumbInstance?.addEndpoint(node, endpointOptions, {
-            cssClass: 'connection-point-endpoint',
-            endpointStyle: { fill: '#007BFF' },
-            parent: circle,
-        });
+        registerAnchor(node, circle, position);
     });
+    handleNodeLayoutChange();
+}
+
+export function updateCanvasBounds() {
+    const content = state.canvasContent || state.canvasContainer;
+    if (!content) return;
+
+    const transform = state.canvasTransform || state.canvasContainer;
+    const minSize = 2000;
+    const padding = 800;
+
+    let maxRight = 0;
+    let maxBottom = 0;
+
+    state.nodes.forEach((node) => {
+        if (!node || !content.contains(node)) return;
+        const left = Number.parseFloat(node.style.left) || node.offsetLeft || 0;
+        const top = Number.parseFloat(node.style.top) || node.offsetTop || 0;
+        const width = node.offsetWidth || Number.parseFloat(node.style.width) || 0;
+        const height = node.offsetHeight || Number.parseFloat(node.style.height) || 0;
+        maxRight = Math.max(maxRight, left + width);
+        maxBottom = Math.max(maxBottom, top + height);
+    });
+
+    const targetWidth = Math.max(minSize, Math.ceil(maxRight + padding));
+    const targetHeight = Math.max(minSize, Math.ceil(maxBottom + padding));
+
+    content.style.width = `${targetWidth}px`;
+    content.style.height = `${targetHeight}px`;
+
+    if (transform && transform !== content) {
+        transform.style.width = `${targetWidth}px`;
+        transform.style.height = `${targetHeight}px`;
+    }
+    updateConnectionLayerSize(targetWidth, targetHeight);
+    queueConnectionRefresh();
 }
 
 function handlePasteEvent(event) {

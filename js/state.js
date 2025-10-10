@@ -5,7 +5,6 @@ export const state = {
     canvasContainer: null,
     canvasTransform: null,
     canvasContent: null,
-    jsPlumbInstance: null,
     nodeIdCounter: 0,
     panOffsetX: 0,
     panOffsetY: 0,
@@ -23,6 +22,13 @@ export const state = {
     },
     lastPointerX: 200,
     lastPointerY: 200,
+    connections: [],
+    connectionIdCounter: 0,
+    connectionPreview: null,
+    connectionDrag: null,
+    connectionHoverAnchor: null,
+    connectionLayer: null,
+    _connectionRefreshScheduled: false,
 };
 
 export function markDirty() {
@@ -37,4 +43,15 @@ export function resetDirty() {
 export function setCurrentChart(id, name = '') {
     state.currentChartId = id;
     state.currentChartName = name;
+}
+
+export function scheduleConnectionRefresh(callback) {
+    if (state._connectionRefreshScheduled) return;
+    state._connectionRefreshScheduled = true;
+
+    const raf = window.requestAnimationFrame || ((fn) => setTimeout(fn, 16));
+    raf(() => {
+        state._connectionRefreshScheduled = false;
+        callback?.();
+    });
 }
