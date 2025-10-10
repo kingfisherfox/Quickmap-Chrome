@@ -3,7 +3,7 @@
 import { state } from './state.js';
 import { setupCanvasInteractions, clearCanvas, updateCanvasTransform } from './canvas.js';
 import { initializeJsPlumb, enableLineDeletion } from './connections.js';
-import { setupNodeInteractions } from './nodes.js';
+import { setupNodeInteractions, initializeImagePasteHandling } from './nodes.js';
 import { initializeChartControls } from './charts.js';
 import { initializeSettingsPanel } from './settings.js';
 
@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeJsPlumb();
     setupCanvasInteractions();
     setupNodeInteractions();
+    initializeImagePasteHandling();
 
     enableLineDeletion();
     initializeChartControls();

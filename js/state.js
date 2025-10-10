@@ -21,6 +21,8 @@ export const state = {
     connectionSettings: {
         animated: false,
     },
+    lastPointerX: 200,
+    lastPointerY: 200,
 };
 
 export function markDirty() {

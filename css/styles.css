@@ -238,6 +238,15 @@ body {
     display: none;
 }
 
+.node-image-container .node-image {
+    width: 100%;
+    height: calc(100% - 30px);
+    object-fit: contain;
+    display: block;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
 /* Resize handle at the bottom-right corner of the node */
 .resize-handle {
     position: absolute;

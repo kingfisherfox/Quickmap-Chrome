@@ -4,6 +4,9 @@ import { state, markDirty } from './state.js';
 import { edgeMappings, EDGE_TYPE_PLAIN } from './edgeStyles.js';
 import { applySettingsToAllConnections } from './connections.js';
 
+const NODE_TYPE_TEXT = 'text';
+const NODE_TYPE_IMAGE = 'image';
+
 export function addNode(
     x,
     y,
@@ -13,7 +16,11 @@ export function addNode(
     id = null,
     options = {},
 ) {
-    const { markDirtyOnChange = true } = options;
+    const {
+        markDirtyOnChange = true,
+        type = NODE_TYPE_TEXT,
+        imageSrc = null,
+    } = options;
     const node = document.createElement('div');
     node.className = 'node';
     node.style.left = `${x}px`;
@@ -22,6 +29,11 @@ export function addNode(
     node.style.height = height;
     node.id = id || `node-${state.nodeIdCounter++}`;
     node.setAttribute('tabindex', '0');
+    node.dataset.type = type;
+    if (type === NODE_TYPE_IMAGE && imageSrc) {
+        node.dataset.imageSrc = imageSrc;
+        node.classList.add('node-image-container');
+    }
 
     const topBar = document.createElement('div');
     topBar.className = 'node-top-bar';
@@ -43,17 +55,25 @@ export function addNode(
 
     node.appendChild(topBar);
 
-    const textarea = document.createElement('textarea');
-    textarea.placeholder = 'Enter text here';
-    textarea.value = content;
-    textarea.className = 'node-textarea';
-
-    node.appendChild(textarea);
+    let textarea = null;
+    if (type === NODE_TYPE_IMAGE && imageSrc) {
+        const imageElement = document.createElement('img');
+        imageElement.src = imageSrc;
+        imageElement.alt = options.alt || 'Pasted image';
+        imageElement.className = 'node-image';
+        node.appendChild(imageElement);
+    } else {
+        textarea = document.createElement('textarea');
+        textarea.placeholder = 'Enter text here';
+        textarea.value = content;
+        textarea.className = 'node-textarea';
+        node.appendChild(textarea);
+    }
     const parent = state.canvasTransform || state.canvasContainer;
     parent?.appendChild(node);
     state.nodes.push(node);
 
-    console.info('Node added', { id: node.id, x, y });
+    console.info('Node added', { id: node.id, x, y, type });
 
     makeNodeDraggable(node, dragHandle);
     makeNodeResizable(node);
@@ -63,9 +83,11 @@ export function addNode(
         markDirty();
     }
 
-    textarea.addEventListener('input', () => {
-        markDirty();
-    });
+    if (textarea) {
+        textarea.addEventListener('input', () => {
+            markDirty();
+        });
+    }
 
     state.jsPlumbInstance?.repaintEverything();
 }
@@ -78,6 +100,10 @@ export function setupNodeInteractions() {
             (event.pageY - state.panOffsetY) / state.scale,
         );
     });
+}
+
+export function initializeImagePasteHandling() {
+    document.addEventListener('paste', handlePasteEvent);
 }
 
 export function deleteNode(node) {
@@ -95,14 +121,26 @@ export function deleteNode(node) {
 }
 
 export function serializeNodes() {
-    return state.nodes.map((node) => ({
-        id: node.id,
-        left: node.style.left,
-        top: node.style.top,
-        content: node.querySelector('textarea').value,
-        width: node.style.width,
-        height: node.style.height,
-    }));
+    return state.nodes.map((node) => {
+        const type = node.dataset.type || NODE_TYPE_TEXT;
+        const base = {
+            id: node.id,
+            left: node.style.left,
+            top: node.style.top,
+            width: node.style.width,
+            height: node.style.height,
+            type,
+        };
+
+        if (type === NODE_TYPE_IMAGE) {
+            base.imageSrc = node.dataset.imageSrc || '';
+        } else {
+            const textarea = node.querySelector('textarea');
+            base.content = textarea ? textarea.value : '';
+        }
+
+        return base;
+    });
 }
 
 export function loadNodes(nodeData = []) {
@@ -110,14 +148,28 @@ export function loadNodes(nodeData = []) {
     state.nodes = [];
 
     nodeData.forEach((data) => {
+        const type = data.type || NODE_TYPE_TEXT;
+        const options = {
+            markDirtyOnChange: false,
+            type,
+        };
+        if (type === NODE_TYPE_IMAGE && data.imageSrc) {
+            options.imageSrc = data.imageSrc;
+        }
+
+        const left = parseFloat(data.left);
+        const top = parseFloat(data.top);
+        const width = data.width || '250px';
+        const height = data.height || '150px';
+
         addNode(
-            parseFloat(data.left),
-            parseFloat(data.top),
-            data.content,
-            data.width,
-            data.height,
+            Number.isNaN(left) ? 100 : left,
+            Number.isNaN(top) ? 100 : top,
+            type === NODE_TYPE_IMAGE ? '' : data.content,
+            width,
+            height,
             data.id,
-            { markDirtyOnChange: false },
+            options,
         );
     });
 
@@ -244,4 +296,47 @@ function addConnectionPoints(node) {
             parent: circle,
         });
     });
+}
+
+function handlePasteEvent(event) {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i += 1) {
+        const item = items[i];
+        if (!item || !item.type?.startsWith('image/')) continue;
+        const file = item.getAsFile();
+        if (!file) continue;
+
+        event.preventDefault();
+        const reader = new FileReader();
+        reader.onload = (loadEvent) => {
+            const dataUrl = loadEvent.target?.result;
+            if (typeof dataUrl === 'string') {
+                addImageNode(dataUrl);
+            }
+        };
+        reader.readAsDataURL(file);
+        break;
+    }
+}
+
+function addImageNode(dataUrl) {
+    const defaultWidth = 250;
+    const defaultHeight = 200;
+    const x = ((state.lastPointerX - state.panOffsetX) / state.scale) - defaultWidth / 2;
+    const y = ((state.lastPointerY - state.panOffsetY) / state.scale) - defaultHeight / 2;
+
+    addNode(
+        Math.max(0, x),
+        Math.max(0, y),
+        '',
+        `${defaultWidth}px`,
+        `${defaultHeight}px`,
+        null,
+        {
+            type: NODE_TYPE_IMAGE,
+            imageSrc: dataUrl,
+        },
+    );
 }

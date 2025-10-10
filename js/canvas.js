@@ -25,6 +25,9 @@ export function setupCanvasInteractions() {
     });
 
     document.addEventListener('mousemove', (event) => {
+        state.lastPointerX = event.pageX;
+        state.lastPointerY = event.pageY;
+
         if (!state.isPanning) return;
 
         state.panOffsetX += event.pageX - state.panStartX;
