@@ -96,6 +96,7 @@ export function addNode(
     }
 
     updateCanvasBounds();
+    queueConnectionRefresh();
 }
 
 export function setupNodeInteractions() {
@@ -126,6 +127,7 @@ export function deleteNode(node) {
     console.info('Node deleted', { id: node.id });
 
     updateCanvasBounds();
+    queueConnectionRefresh();
 }
 
 export function serializeNodes() {
@@ -192,6 +194,7 @@ export function loadNodes(nodeData = []) {
     }
 
     updateCanvasBounds();
+    queueConnectionRefresh();
 }
 
 function makeNodeDraggable(node, handle) {

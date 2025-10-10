@@ -9,6 +9,7 @@ const CONNECTION_CLASS = 'connection-path';
 const DASHED_CLASS = 'connection-dashed';
 const ANIMATED_CLASS = 'connection-animated';
 const REVERSE_CLASS = 'reverse-flow';
+const DELETE_GROUP_CLASS = 'connection-delete';
 
 function ensureConnectionLayer() {
     if (state.connectionLayer) return state.connectionLayer;
@@ -25,6 +26,25 @@ function ensureConnectionLayer() {
         layer.style.left = '0';
         const parent = state.canvasContent || state.canvasTransform || document.body;
         parent.appendChild(layer);
+    }
+    if (!layer.querySelector('#connection-markers')) {
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        defs.setAttribute('id', 'connection-markers');
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        marker.setAttribute('id', 'connection-arrow');
+        marker.setAttribute('viewBox', '0 0 10 10');
+        marker.setAttribute('markerUnits', 'strokeWidth');
+        marker.setAttribute('markerWidth', '8');
+        marker.setAttribute('markerHeight', '8');
+        marker.setAttribute('orient', 'auto');
+        marker.setAttribute('refX', '9');
+        marker.setAttribute('refY', '5');
+        const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        arrowPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+        arrowPath.setAttribute('fill', '#007BFF');
+        marker.appendChild(arrowPath);
+        defs.appendChild(marker);
+        layer.appendChild(defs);
     }
     state.connectionLayer = layer;
     return layer;
@@ -76,16 +96,21 @@ function updateConnectionPath(connection) {
     const path = computePath(start, end);
     connection.pathElement.setAttribute('d', path);
     applyFlowDirection(connection, start, end);
+    updateDeletePosition(connection, start, end);
 }
 
 function applyFlowDirection(connection, start, end) {
     const path = connection.pathElement;
     path.classList.remove(REVERSE_CLASS);
+    path.removeAttribute('marker-start');
+    path.setAttribute('marker-end', 'url(#connection-arrow)');
     const dx = end.x - start.x;
     const dy = end.y - start.y;
     const dominatesHorizontal = Math.abs(dx) >= Math.abs(dy);
     if (dominatesHorizontal ? dx < 0 : dy < 0) {
         path.classList.add(REVERSE_CLASS);
+        path.setAttribute('marker-start', 'url(#connection-arrow)');
+        path.removeAttribute('marker-end');
     }
 }
 
@@ -126,9 +151,42 @@ function createPathElement(className) {
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke', '#007BFF');
     path.setAttribute('stroke-width', '2');
-    path.setAttribute('pointer-events', 'stroke');
+    path.setAttribute('pointer-events', className.includes(PREVIEW_CLASS) ? 'none' : 'stroke');
+    if (!className.includes(PREVIEW_CLASS)) {
+        path.setAttribute('marker-end', 'url(#connection-arrow)');
+    }
     layer.appendChild(path);
     return path;
+}
+
+function createDeleteHandle(connection) {
+    const layer = ensureConnectionLayer();
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    group.setAttribute('class', DELETE_GROUP_CLASS);
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('r', '10');
+    circle.setAttribute('cx', '0');
+    circle.setAttribute('cy', '0');
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', '0');
+    text.setAttribute('y', '0');
+    text.textContent = '×';
+    group.appendChild(circle);
+    group.appendChild(text);
+    group.addEventListener('click', (event) => {
+        event.stopPropagation();
+        removeConnection(connection.id);
+        markDirty();
+    });
+    layer.appendChild(group);
+    return group;
+}
+
+function updateDeletePosition(connection, start, end) {
+    if (!connection.deleteElement) return;
+    const midX = (start.x + end.x) / 2;
+    const midY = (start.y + end.y) / 2;
+    connection.deleteElement.setAttribute('transform', `translate(${midX}, ${midY})`);
 }
 
 function startConnectionDrag(event, anchorEl) {
@@ -233,16 +291,13 @@ function commitConnection(sourceAnchorEl, targetElement) {
         targetAnchor,
         lineStyle,
         pathElement,
+        deleteElement: null,
     };
-
-    pathElement.addEventListener('click', (event) => {
-        event.stopPropagation();
-        removeConnection(connection.id);
-        markDirty();
-    });
 
     state.connections.push(connection);
     applyConnectionStyle(connection);
+    updateConnectionPath(connection);
+    connection.deleteElement = createDeleteHandle(connection);
     updateConnectionPath(connection);
     markDirty();
     scheduleRefresh();
@@ -253,6 +308,7 @@ export function removeConnection(connectionId) {
     if (index === -1) return;
     const [connection] = state.connections.splice(index, 1);
     connection.pathElement?.remove();
+    connection.deleteElement?.remove();
     scheduleRefresh();
 }
 
@@ -297,6 +353,7 @@ export function loadConnections(savedConnections = []) {
             targetAnchor: targetAnchorName,
             lineStyle: data.lineStyle || EDGE_TYPE_PLAIN,
             pathElement,
+            deleteElement: null,
         };
         applyConnectionStyle(connection);
         state.connections.push(connection);
@@ -305,6 +362,8 @@ export function loadConnections(savedConnections = []) {
         if (!Number.isNaN(numericId)) {
             state.connectionIdCounter = Math.max(state.connectionIdCounter, numericId);
         }
+        connection.deleteElement = createDeleteHandle(connection);
+        updateConnectionPath(connection);
     });
     scheduleRefresh();
 }
@@ -319,6 +378,7 @@ export function applySettingsToAllConnections() {
 
 export function clearConnections() {
     state.connections.forEach((connection) => connection.pathElement?.remove());
+    state.connections.forEach((connection) => connection.deleteElement?.remove());
     state.connections = [];
     state.connectionIdCounter = 0;
     clearPreview();

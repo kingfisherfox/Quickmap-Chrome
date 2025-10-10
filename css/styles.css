@@ -83,6 +83,33 @@ body {
     box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.35);
 }
 
+.connection-delete {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.connection-delete circle {
+    fill: #ffffff;
+    stroke: #007BFF;
+    stroke-width: 2;
+}
+
+.connection-delete text {
+    fill: #007BFF;
+    font-size: 12px;
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    dominant-baseline: middle;
+    text-anchor: middle;
+}
+
+.connection-delete:hover circle {
+    fill: #007BFF;
+}
+
+.connection-delete:hover text {
+    fill: #ffffff;
+}
+
 /* Header styles */
 #header-bar {
     position: fixed;
