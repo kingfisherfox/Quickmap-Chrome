@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "QuickMap",
   "description": "Create and edit flowcharts seamlessly.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },

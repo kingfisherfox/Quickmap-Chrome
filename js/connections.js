@@ -63,9 +63,20 @@ function getAnchorPoint(anchorEl) {
     const layer = ensureConnectionLayer();
     const layerRect = layer.getBoundingClientRect();
     const rect = anchorEl.getBoundingClientRect();
+    const scale = state.scale || 1;
     return {
-        x: (rect.left + rect.width / 2) - layerRect.left,
-        y: (rect.top + rect.height / 2) - layerRect.top,
+        x: ((rect.left + rect.width / 2) - layerRect.left) / scale,
+        y: ((rect.top + rect.height / 2) - layerRect.top) / scale,
+    };
+}
+
+function getLayerCoordinates(clientX, clientY) {
+    const layer = ensureConnectionLayer();
+    const layerRect = layer.getBoundingClientRect();
+    const scale = state.scale || 1;
+    return {
+        x: (clientX - layerRect.left) / scale,
+        y: (clientY - layerRect.top) / scale,
     };
 }
 
@@ -193,7 +204,6 @@ function startConnectionDrag(event, anchorEl) {
     event.preventDefault();
     event.stopPropagation();
 
-    const layer = ensureConnectionLayer();
     const sourceNodeId = anchorEl.dataset.nodeId;
     const sourceAnchor = anchorEl.dataset.anchor;
     if (!sourceNodeId || !sourceAnchor) return;
@@ -211,11 +221,7 @@ function startConnectionDrag(event, anchorEl) {
 
     const onMove = (moveEvent) => {
         const anchorPoint = getAnchorPoint(anchorEl);
-        const svgRect = layer.getBoundingClientRect();
-        const endPoint = {
-            x: moveEvent.clientX - svgRect.left,
-            y: moveEvent.clientY - svgRect.top,
-        };
+        const endPoint = getLayerCoordinates(moveEvent.clientX, moveEvent.clientY);
         const path = computePath(anchorPoint, endPoint);
         previewPath.setAttribute('d', path);
 
