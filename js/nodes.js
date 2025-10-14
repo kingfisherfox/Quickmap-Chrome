@@ -47,22 +47,31 @@ export function addNode(
         node.classList.add('node-image-container');
     }
 
+    const hoverTag = document.createElement('div');
+    hoverTag.className = 'node-hover-tag';
+    hoverTag.setAttribute('tabindex', '0');
+    hoverTag.setAttribute('aria-label', 'Drag node handle');
+    hoverTag.title = 'Drag node';
+    node.appendChild(hoverTag);
+
     const topBar = document.createElement('div');
     topBar.className = 'node-top-bar';
+    topBar.setAttribute('role', 'toolbar');
+    topBar.setAttribute('aria-label', 'Node actions');
 
-    const dragHandle = document.createElement('span');
-    dragHandle.className = 'node-drag-handle';
-    dragHandle.textContent = 'Drag';
-
-    const deleteButton = document.createElement('span');
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
     deleteButton.className = 'node-delete-button';
     deleteButton.textContent = 'Delete';
+    deleteButton.setAttribute('aria-label', 'Delete node');
+    deleteButton.addEventListener('mousedown', (event) => {
+        event.stopPropagation();
+    });
     deleteButton.addEventListener('click', (event) => {
         event.stopPropagation();
         deleteNode(node);
     });
 
-    topBar.appendChild(dragHandle);
     topBar.appendChild(deleteButton);
 
     node.appendChild(topBar);
@@ -96,9 +105,10 @@ export function addNode(
 
     console.info('Node added', { id: node.id, x, y, type });
 
-    makeNodeDraggable(node, dragHandle);
+    makeNodeDraggable(node, [topBar, hoverTag]);
     makeNodeResizable(node);
     addConnectionPoints(node);
+    setupToolbarHover(node, hoverTag, topBar);
 
     if (markDirtyOnChange) {
         markDirty();
@@ -220,14 +230,20 @@ export function loadNodes(nodeData = []) {
     queueConnectionRefresh();
 }
 
-function makeNodeDraggable(node, handle) {
+function makeNodeDraggable(node, handles) {
+    const dragHandles = Array.isArray(handles)
+        ? handles.filter(Boolean)
+        : [handles].filter(Boolean);
+    if (dragHandles.length === 0) return;
+
     const getCanvasCoordinates = (event) => ({
         x: (event.pageX - state.panOffsetX) / state.scale,
         y: (event.pageY - state.panOffsetY) / state.scale,
     });
 
-    handle.addEventListener('mousedown', (event) => {
+    const startDragging = (event) => {
         if (node.isResizing) return;
+        if (event.type === 'mousedown' && event.button !== 0) return;
         event.stopPropagation();
         node.isDragging = true;
         const { x, y } = getCanvasCoordinates(event);
@@ -248,6 +264,10 @@ function makeNodeDraggable(node, handle) {
 
         document.body.style.cursor = 'move';
         event.preventDefault();
+    };
+
+    dragHandles.forEach((handle) => {
+        handle.addEventListener('mousedown', startDragging);
     });
 
     document.addEventListener('mousemove', (event) => {
@@ -277,6 +297,31 @@ function makeNodeDraggable(node, handle) {
         applySettingsToAllConnections();
         updateCanvasBounds();
         handleNodeLayoutChange();
+    });
+}
+
+function setupToolbarHover(node, hoverTag, topBar) {
+    let hideTimeout = null;
+
+    const showToolbar = () => {
+        clearTimeout(hideTimeout);
+        node.classList.add('node-toolbar-active');
+    };
+
+    const scheduleHide = () => {
+        clearTimeout(hideTimeout);
+        hideTimeout = setTimeout(() => {
+            node.classList.remove('node-toolbar-active');
+        }, 200);
+    };
+
+    const toolbarElements = [hoverTag, topBar, topBar.querySelector('.node-delete-button')].filter(Boolean);
+
+    toolbarElements.forEach((element) => {
+        element.addEventListener('mouseenter', showToolbar);
+        element.addEventListener('mouseleave', scheduleHide);
+        element.addEventListener('focus', showToolbar);
+        element.addEventListener('blur', scheduleHide);
     });
 }
 
