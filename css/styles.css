@@ -250,6 +250,11 @@ body {
     transition: box-shadow 0.2s ease;
 }
 
+.node.selected {
+    border-color: #0b5ed7;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25), 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
 /* Top bar for drag handle and delete button */
 .node-top-bar {
     display: flex;
@@ -389,6 +394,18 @@ body {
     display: block;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
+}
+
+.selection-rectangle {
+    position: absolute;
+    border: 1px dashed #007BFF;
+    background-color: rgba(0, 123, 255, 0.1);
+    pointer-events: none;
+    z-index: 50;
+}
+
+.selection-rectangle.hidden {
+    display: none;
 }
 
 /* Resize handle at the bottom-right corner of the node */

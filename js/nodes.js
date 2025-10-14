@@ -9,6 +9,12 @@ import {
     queueConnectionRefresh,
     updateConnectionLayerSize,
 } from './connections.js';
+import {
+    getSelectedNodes,
+    isNodeSelected,
+    removeNodeFromSelection,
+    clearSelection,
+} from './selection.js';
 
 const NODE_TYPE_TEXT = 'text';
 const NODE_TYPE_IMAGE = 'image';
@@ -125,6 +131,7 @@ export function initializeImagePasteHandling() {
 
 export function deleteNode(node) {
     removeConnectionsForNode(node.id);
+    removeNodeFromSelection(node);
 
     const parent = state.canvasContent || state.canvasTransform || state.canvasContainer;
     if (parent?.contains(node)) {
@@ -171,6 +178,7 @@ export function serializeNodes() {
 export function loadNodes(nodeData = []) {
     state.nodeIdCounter = 0;
     state.nodes = [];
+    clearSelection();
 
     nodeData.forEach((data) => {
         const type = data.type || NODE_TYPE_TEXT;
@@ -213,25 +221,47 @@ export function loadNodes(nodeData = []) {
 }
 
 function makeNodeDraggable(node, handle) {
-    let offsetX;
-    let offsetY;
+    const getCanvasCoordinates = (event) => ({
+        x: (event.pageX - state.panOffsetX) / state.scale,
+        y: (event.pageY - state.panOffsetY) / state.scale,
+    });
 
     handle.addEventListener('mousedown', (event) => {
         if (node.isResizing) return;
         event.stopPropagation();
         node.isDragging = true;
-        offsetX = event.offsetX;
-        offsetY = event.offsetY;
+        const { x, y } = getCanvasCoordinates(event);
+        const selected = getSelectedNodes();
+        const isGroupDrag = selected.length > 1 && isNodeSelected(node);
+        const targets = isGroupDrag ? selected : [node];
+
+        state.activeDrag = {
+            origin: node,
+            pointerStartX: x,
+            pointerStartY: y,
+            targets: targets.map((current) => ({
+                node: current,
+                startLeft: Number.parseFloat(current.style.left) || current.offsetLeft || 0,
+                startTop: Number.parseFloat(current.style.top) || current.offsetTop || 0,
+            })),
+        };
+
         document.body.style.cursor = 'move';
+        event.preventDefault();
     });
 
     document.addEventListener('mousemove', (event) => {
         if (!node.isDragging) return;
+        if (!state.activeDrag || state.activeDrag.origin !== node) return;
 
-        const x = (event.pageX - offsetX - state.panOffsetX) / state.scale;
-        const y = (event.pageY - offsetY - state.panOffsetY) / state.scale;
-        node.style.left = `${x}px`;
-        node.style.top = `${y}px`;
+        const { x, y } = getCanvasCoordinates(event);
+        const deltaX = x - state.activeDrag.pointerStartX;
+        const deltaY = y - state.activeDrag.pointerStartY;
+
+        state.activeDrag.targets.forEach((target) => {
+            target.node.style.left = `${target.startLeft + deltaX}px`;
+            target.node.style.top = `${target.startTop + deltaY}px`;
+        });
         handleNodeLayoutChange();
     });
 
@@ -239,6 +269,9 @@ function makeNodeDraggable(node, handle) {
         if (!node.isDragging) return;
 
         node.isDragging = false;
+        if (state.activeDrag?.origin === node) {
+            state.activeDrag = null;
+        }
         document.body.style.cursor = 'default';
         markDirty();
         applySettingsToAllConnections();

@@ -7,6 +7,7 @@ import { setupNodeInteractions, initializeImagePasteHandling } from './nodes.js'
 import { initializeChartControls } from './charts.js';
 import { initializeSettingsPanel } from './settings.js';
 import { initializeTextFormatting } from './textFormatting.js';
+import { initializeSelectionOverlay } from './selection.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const canvasContainer = document.getElementById('canvas-container');
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     state.canvasContent = canvasContent;
     window.canvasContainer = canvasTransform;
 
+    initializeSelectionOverlay();
     initializeConnectionLayer();
     setupCanvasInteractions();
     setupNodeInteractions();

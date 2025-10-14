@@ -3,6 +3,19 @@
 import { state, markDirty } from './state.js';
 import { updateCanvasBounds } from './nodes.js';
 import { queueConnectionRefresh, handleNodeLayoutChange, clearConnections } from './connections.js';
+import {
+    beginSelection,
+    updateSelection,
+    finalizeSelection,
+    clearSelection,
+} from './selection.js';
+
+function getCanvasCoordinates(event) {
+    return {
+        x: (event.pageX - state.panOffsetX) / state.scale,
+        y: (event.pageY - state.panOffsetY) / state.scale,
+    };
+}
 
 export function setupCanvasInteractions() {
     document.addEventListener('keydown', (event) => {
@@ -18,17 +31,36 @@ export function setupCanvasInteractions() {
     });
 
     state.canvasContainer.addEventListener('mousedown', (event) => {
-        if (!state.isSpaceDown) return;
-        state.isPanning = true;
-        state.panStartX = event.pageX;
-        state.panStartY = event.pageY;
-        document.body.style.cursor = 'grabbing';
+        if (state.isSpaceDown) {
+            state.isPanning = true;
+            state.panStartX = event.pageX;
+            state.panStartY = event.pageY;
+            document.body.style.cursor = 'grabbing';
+            event.preventDefault();
+            return;
+        }
+
+        if (event.button !== 0) return;
+
+        const target = event.target;
+        if (target instanceof HTMLElement && target.closest('.node')) {
+            return;
+        }
+
+        const { x, y } = getCanvasCoordinates(event);
+        beginSelection(x, y);
         event.preventDefault();
     });
 
     document.addEventListener('mousemove', (event) => {
         state.lastPointerX = event.pageX;
         state.lastPointerY = event.pageY;
+
+        if (state.isSelecting) {
+            const { x, y } = getCanvasCoordinates(event);
+            updateSelection(x, y);
+            event.preventDefault();
+        }
 
         if (!state.isPanning) return;
 
@@ -41,7 +73,14 @@ export function setupCanvasInteractions() {
         handleNodeLayoutChange();
     });
 
-    document.addEventListener('mouseup', () => {
+    document.addEventListener('mouseup', (event) => {
+        if (state.isSelecting) {
+            const { x, y } = getCanvasCoordinates(event);
+            updateSelection(x, y);
+            finalizeSelection();
+            event.preventDefault();
+        }
+
         if (!state.isPanning) return;
         state.isPanning = false;
         document.body.style.cursor = 'default';
@@ -95,6 +134,7 @@ export function clearCanvas({ markDirty: shouldMarkDirty = true } = {}) {
             parent.removeChild(node);
         }
     });
+    clearSelection();
     state.nodes = [];
     state.nodeIdCounter = 0;
 

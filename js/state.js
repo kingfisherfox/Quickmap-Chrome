@@ -29,6 +29,12 @@ export const state = {
     connectionHoverAnchor: null,
     connectionLayer: null,
     _connectionRefreshScheduled: false,
+    selectedNodes: new Set(),
+    isSelecting: false,
+    selectionStartX: 0,
+    selectionStartY: 0,
+    selectionRect: null,
+    activeDrag: null,
 };
 
 export function markDirty() {
