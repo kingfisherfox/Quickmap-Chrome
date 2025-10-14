@@ -241,13 +241,13 @@ body {
     min-width: 100px;
     min-height: 60px;
     background-color: #ffffff;
-    border: 2px solid #007BFF;
+    border: 2px solid rgba(148, 163, 184, 0.6);
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
     user-select: none;
     resize: none;
     overflow: visible;
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .node-hover-tag {
@@ -256,17 +256,18 @@ body {
     left: -14px;
     width: 26px;
     height: 26px;
-    background-color: #007BFF;
+    background-color: rgba(226, 232, 240, 0.9);
     border: 2px solid #ffffff;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.25);
+    box-shadow: 0 4px 8px rgba(148, 163, 184, 0.25);
     cursor: grab;
     z-index: 30;
+    opacity: 0.3;
     outline: none;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
 }
 
 .node-hover-tag::before {
@@ -278,8 +279,8 @@ body {
     box-shadow: 0 4px 0 #ffffff, 0 -4px 0 #ffffff;
 }
 
-.node-hover-tag:hover {
-    background-color: #0056b3;
+.node:hover .node-hover-tag {
+    opacity: 0.6;
 }
 
 .node-hover-tag:active {
@@ -292,8 +293,18 @@ body {
     box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px rgba(0, 123, 255, 0.35);
 }
 
+.node:hover .node-hover-tag,
+.node:focus-within .node-hover-tag,
+.node.node-toolbar-active .node-hover-tag {
+    background-color: #007BFF;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    opacity: 1;
+}
+
 .node.selected .node-hover-tag {
     background-color: #0b5ed7;
+    opacity: 1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
 }
 
 .node.selected {
@@ -307,8 +318,8 @@ body {
     justify-content: flex-end;
     gap: 8px;
     align-items: center;
-    background-color: #007BFF;
-    color: white;
+    background-color: rgba(226, 232, 240, 0.95);
+    color: #334155;
     padding: 0 8px;
     height: 30px;
     font-weight: bold;
@@ -328,6 +339,7 @@ body {
     transition: transform 0.25s ease, opacity 0.2s ease;
     z-index: -1;
     box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+    opacity: 0.25;
 }
 
 .node:has(.node-hover-tag:hover) .node-top-bar,
@@ -339,6 +351,8 @@ body {
     opacity: 1;
     pointer-events: auto;
     z-index: 25;
+    background-color: #007BFF;
+    color: #ffffff;
 }
 
 .node:has(.node-textarea:hover) .node-top-bar,
@@ -360,6 +374,21 @@ body {
     opacity: 1;
     pointer-events: auto;
     z-index: 25;
+    background-color: #007BFF;
+    color: #ffffff;
+}
+
+.node.node-toolbar-active .node-hover-tag,
+.node:has(.node-textarea:focus) .node-hover-tag,
+.node:has(.node-textarea:focus-within) .node-hover-tag {
+    opacity: 1;
+}
+
+.node:hover,
+.node:focus-within,
+.node.node-toolbar-active {
+    border-color: #007BFF;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.18), 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 /* Delete button */
@@ -367,7 +396,7 @@ body {
     background: transparent;
     border: none;
     padding: 0;
-    color: #ffffff;
+    color: inherit;
     font-size: 12px;
     cursor: pointer;
     margin-left: 8px;
@@ -499,25 +528,29 @@ body {
     height: 12px;
     bottom: 0;
     right: 0;
-    background-color: #007BFF;
+    background-color: rgba(203, 213, 225, 0.8);
     cursor: se-resize;
     border-top-left-radius: 2px;
+    opacity: 0.25;
+    transition: opacity 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .connection-point {
     position: absolute;
     width: 16px;
     height: 16px;
-    background-color: #007BFF;
+    background-color: rgba(203, 213, 225, 0.85);
     border: 2px solid #ffffff;
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 0 4px rgba(148, 163, 184, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
     pointer-events: auto;
+    opacity: 0.25;
+    transition: opacity 0.2s ease;
 }
 
 .connection-point::after {
@@ -531,6 +564,24 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
+}
+
+.node:hover .connection-point,
+.node:focus-within .connection-point,
+.node.selected .connection-point,
+.node.node-toolbar-active .connection-point {
+    opacity: 1;
+    background-color: #007BFF;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+}
+
+.node:hover .resize-handle,
+.node:focus-within .resize-handle,
+.node.selected .resize-handle,
+.node.node-toolbar-active .resize-handle {
+    opacity: 1;
+    background-color: #007BFF;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.25);
 }
 
 #settings-drawer {
