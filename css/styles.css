@@ -314,7 +314,7 @@ body {
 
 .node-image-container .node-image {
     width: 100%;
-    height: calc(100% - 30px);
+    height: 100%;
     object-fit: contain;
     display: block;
     border-bottom-left-radius: 8px;
