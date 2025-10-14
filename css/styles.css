@@ -276,6 +276,12 @@ body {
     opacity: 1;
 }
 
+.node:has(.node-textarea:hover) .node-top-bar,
+.node:has(.node-image:hover) .node-top-bar {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
 /* Drag handle */
 .node-drag-handle {
     flex-grow: 1;
