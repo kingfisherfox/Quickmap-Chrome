@@ -6,6 +6,7 @@ import { initializeConnectionLayer } from './connections.js';
 import { setupNodeInteractions, initializeImagePasteHandling } from './nodes.js';
 import { initializeChartControls } from './charts.js';
 import { initializeSettingsPanel } from './settings.js';
+import { initializeTextFormatting } from './textFormatting.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const canvasContainer = document.getElementById('canvas-container');
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeChartControls();
     initializeSettingsPanel();
+    initializeTextFormatting();
     updateCanvasTransform();
 
     const clearButton = document.getElementById('clear-btn');

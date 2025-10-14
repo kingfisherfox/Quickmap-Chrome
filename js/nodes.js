@@ -69,10 +69,19 @@ export function addNode(
         imageElement.className = 'node-image';
         node.appendChild(imageElement);
     } else {
-        textarea = document.createElement('textarea');
-        textarea.placeholder = 'Enter text here';
-        textarea.value = content;
+        textarea = document.createElement('div');
+        textarea.contentEditable = 'true';
+        textarea.spellcheck = true;
         textarea.className = 'node-textarea';
+        textarea.dataset.placeholder = 'Enter text here';
+        if (content) {
+            const isRichText = /<\s*(h[1-4]|p|br|div|span|strong|em|u|b|i|hr|ul|ol|li)/i.test(content);
+            if (isRichText) {
+                textarea.innerHTML = content;
+            } else {
+                textarea.textContent = content;
+            }
+        }
         node.appendChild(textarea);
     }
     const parent = state.canvasContent || state.canvasTransform || state.canvasContainer;
@@ -92,6 +101,7 @@ export function addNode(
     if (textarea) {
         textarea.addEventListener('input', () => {
             markDirty();
+            handleNodeLayoutChange();
         });
     }
 
@@ -145,8 +155,13 @@ export function serializeNodes() {
         if (type === NODE_TYPE_IMAGE) {
             base.imageSrc = node.dataset.imageSrc || '';
         } else {
-            const textarea = node.querySelector('textarea');
-            base.content = textarea ? textarea.value : '';
+            const textElement = node.querySelector('.node-textarea');
+            if (textElement) {
+                const html = textElement.innerHTML;
+                base.content = html === '<br>' ? '' : html;
+            } else {
+                base.content = '';
+            }
         }
 
         return base;
