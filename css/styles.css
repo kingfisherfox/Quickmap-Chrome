@@ -295,7 +295,8 @@ body {
 
 .node:hover .node-hover-tag,
 .node:focus-within .node-hover-tag,
-.node.node-toolbar-active .node-hover-tag {
+.node.node-toolbar-active .node-hover-tag,
+.node.node-active .node-hover-tag {
     background-color: #007BFF;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
     opacity: 1;
@@ -346,7 +347,8 @@ body {
 .node:has(.node-hover-tag:focus) .node-top-bar,
 .node:has(.node-hover-tag:focus-visible) .node-top-bar,
 .node:has(.node-top-bar:hover) .node-top-bar,
-.node:has(.node-top-bar:focus-within) .node-top-bar {
+.node:has(.node-top-bar:focus-within) .node-top-bar,
+.node.node-active .node-top-bar {
     transform: scaleX(1);
     opacity: 1;
     pointer-events: auto;
@@ -369,7 +371,8 @@ body {
     pointer-events: none;
 }
 
-.node.node-toolbar-active .node-top-bar {
+.node.node-toolbar-active .node-top-bar,
+.node.node-active .node-top-bar {
     transform: scaleX(1);
     opacity: 1;
     pointer-events: auto;
@@ -380,13 +383,15 @@ body {
 
 .node.node-toolbar-active .node-hover-tag,
 .node:has(.node-textarea:focus) .node-hover-tag,
-.node:has(.node-textarea:focus-within) .node-hover-tag {
+.node:has(.node-textarea:focus-within) .node-hover-tag,
+.node.node-active .node-hover-tag {
     opacity: 1;
 }
 
 .node:hover,
 .node:focus-within,
-.node.node-toolbar-active {
+.node.node-toolbar-active,
+.node.node-active {
     border-color: #007BFF;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.18), 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -569,7 +574,8 @@ body {
 .node:hover .connection-point,
 .node:focus-within .connection-point,
 .node.selected .connection-point,
-.node.node-toolbar-active .connection-point {
+.node.node-toolbar-active .connection-point,
+.node.node-active .connection-point {
     opacity: 1;
     background-color: #007BFF;
     box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
@@ -578,7 +584,8 @@ body {
 .node:hover .resize-handle,
 .node:focus-within .resize-handle,
 .node.selected .resize-handle,
-.node.node-toolbar-active .resize-handle {
+.node.node-toolbar-active .resize-handle,
+.node.node-active .resize-handle {
     opacity: 1;
     background-color: #007BFF;
     box-shadow: 0 0 6px rgba(0, 123, 255, 0.25);

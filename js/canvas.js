@@ -1,7 +1,7 @@
 // canvas.js
 
 import { state, markDirty } from './state.js';
-import { updateCanvasBounds } from './nodes.js';
+import { updateCanvasBounds, clearActiveNodes } from './nodes.js';
 import { queueConnectionRefresh, handleNodeLayoutChange, clearConnections } from './connections.js';
 import {
     beginSelection,
@@ -48,6 +48,7 @@ export function setupCanvasInteractions() {
         }
 
         const { x, y } = getCanvasCoordinates(event);
+        clearActiveNodes();
         beginSelection(x, y);
         event.preventDefault();
     });
