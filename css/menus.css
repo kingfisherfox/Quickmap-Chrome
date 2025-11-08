@@ -1,0 +1,112 @@
+.context-menu {
+    position: absolute;
+    min-width: 184px;
+    background: var(--qm-surface-elevated);
+    border: 1px solid var(--qm-border);
+    border-radius: 8px;
+    box-shadow: var(--qm-shadow-strong);
+    padding: 6px 0;
+    z-index: 2500;
+    display: none;
+    color: var(--qm-text-default);
+}
+
+.context-menu.open {
+    display: block;
+}
+
+.context-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.context-menu-item:hover,
+.context-menu-item:focus-visible {
+    background-color: var(--qm-accent-soft);
+    color: var(--qm-accent-strong);
+    outline: none;
+}
+
+.context-menu-item:active {
+    background-color: var(--qm-accent);
+    color: var(--qm-text-inverse);
+}
+
+.context-menu-item[disabled],
+.context-menu-item[aria-disabled="true"] {
+    color: var(--qm-text-muted);
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.context-menu-item:disabled:hover,
+.context-menu-item[aria-disabled="true"]:hover {
+    background: transparent;
+    color: var(--qm-text-muted);
+}
+
+.context-menu-shortcut {
+    font-size: 12px;
+    opacity: 0.65;
+}
+
+#text-formatting-toolbar {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: var(--qm-toolbar-bg);
+    border: 1px solid var(--qm-toolbar-border);
+    border-radius: 6px;
+    box-shadow: var(--qm-toolbar-shadow);
+    z-index: 2000;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+#text-formatting-toolbar.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#text-formatting-toolbar .toolbar-button {
+    min-width: 32px;
+    height: 28px;
+    padding: 0 6px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    color: var(--qm-text-default);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#text-formatting-toolbar .toolbar-button:hover,
+#text-formatting-toolbar .toolbar-button:focus-visible {
+    background-color: var(--qm-toolbar-button-hover);
+    color: var(--qm-accent-strong);
+}
+
+#text-formatting-toolbar .toolbar-button:active {
+    background-color: var(--qm-toolbar-button-active);
+}
+
+#text-formatting-toolbar .toolbar-separator {
+    width: 1px;
+    height: 20px;
+    background: var(--qm-toolbar-border);
+}

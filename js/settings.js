@@ -47,6 +47,10 @@ export function initializeSettingsPanel() {
     animateToggle.addEventListener('change', () => {
         state.connectionSettings.animated = animateToggle.checked;
         animateToggle.setAttribute('aria-checked', String(animateToggle.checked));
+        console.info('[QuickMap] Connection animation toggle changed:', {
+            animated: state.connectionSettings.animated,
+            connections: state.connections.length,
+        });
         applySettingsToAllConnections();
         markDirty();
     });

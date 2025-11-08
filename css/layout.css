@@ -1,0 +1,149 @@
+/* Header styles */
+#header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--qm-accent-strong);
+    color: var(--qm-text-inverse);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    padding: 10px 20px;
+    box-shadow: var(--qm-shadow-medium);
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+#header-bar h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    flex: 0 0 auto;
+    color: inherit;
+}
+
+#header-bar #clear-btn {
+    background-color: var(--qm-danger);
+    color: var(--qm-text-inverse);
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: var(--qm-shadow-medium);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+#header-bar #clear-btn:hover {
+    background-color: var(--qm-danger-hover);
+}
+
+.chart-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 1 1 420px;
+    max-width: 100%;
+    flex-wrap: wrap;
+}
+
+.chart-controls input,
+.chart-controls select {
+    border: 1px solid var(--qm-border);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--qm-surface);
+    color: var(--qm-text-default);
+    min-height: 34px;
+    flex: 1 1 160px;
+    min-width: 120px;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.chart-controls select {
+    min-width: 180px;
+    flex: 1 1 180px;
+}
+
+.chart-controls input:focus,
+.chart-controls select:focus {
+    outline: none;
+    border-color: var(--qm-accent);
+    box-shadow: 0 0 0 3px var(--qm-accent-soft);
+}
+
+.chart-controls input::placeholder {
+    color: var(--qm-text-muted);
+}
+
+.chart-controls button {
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: var(--qm-shadow-medium);
+    background-color: var(--qm-accent);
+    color: var(--qm-text-inverse);
+    flex: 0 0 auto;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.chart-controls button:hover {
+    background-color: var(--qm-accent-strong);
+}
+
+.chart-controls button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--qm-accent-soft), var(--qm-shadow-medium);
+}
+
+.chart-controls #save-chart-btn {
+    background-color: var(--qm-success);
+}
+
+.chart-controls #save-chart-btn:hover {
+    background-color: var(--qm-success-hover);
+}
+
+.chart-controls #delete-chart-btn,
+.chart-controls #clear-btn {
+    background-color: var(--qm-danger);
+}
+
+.chart-controls #delete-chart-btn:hover,
+.chart-controls #clear-btn:hover {
+    background-color: var(--qm-danger-hover);
+}
+
+.chart-controls #settings-btn {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    color: inherit;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.chart-controls #settings-btn:hover {
+    opacity: 0.85;
+}
+
+.chart-controls #settings-btn:focus-visible {
+    outline: none;
+    opacity: 1;
+    box-shadow: 0 0 0 3px var(--qm-accent-soft);
+    border-radius: 50%;
+}

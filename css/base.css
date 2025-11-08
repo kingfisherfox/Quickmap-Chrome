@@ -1,0 +1,213 @@
+:root {
+    color-scheme: light;
+    --qm-bg-canvas: #f8f9fa;
+    --qm-grid-color: rgba(15, 23, 42, 0.08);
+    --qm-text-default: #0f172a;
+    --qm-text-muted: #475569;
+    --qm-text-inverse: #f8fafc;
+    --qm-surface: #ffffff;
+    --qm-surface-elevated: #ffffff;
+    --qm-surface-muted: rgba(241, 245, 249, 0.9);
+    --qm-border: #d0d7de;
+    --qm-border-strong: rgba(148, 163, 184, 0.6);
+    --qm-shadow-soft: 0 4px 8px rgba(0, 0, 0, 0.06);
+    --qm-shadow-medium: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    --qm-shadow-strong: 0 6px 16px rgba(0, 0, 0, 0.12);
+    --qm-accent: #2563eb;
+    --qm-accent-strong: #1d4ed8;
+    --qm-accent-soft: rgba(37, 99, 235, 0.15);
+    --qm-danger: #ef4444;
+    --qm-danger-hover: #dc2626;
+    --qm-success: #22c55e;
+    --qm-success-hover: #16a34a;
+    --qm-handle-bg: rgba(203, 213, 225, 0.85);
+    --qm-handle-border: #ffffff;
+    --qm-handle-active: #2563eb;
+    --qm-resize-bg: rgba(203, 213, 225, 0.8);
+    --qm-resize-active: #2563eb;
+    --qm-drawer-bg: #ffffff;
+    --qm-drawer-border: #d0d7de;
+    --qm-toolbar-bg: rgba(255, 255, 255, 0.95);
+    --qm-toolbar-border: #d0d7de;
+    --qm-toolbar-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    --qm-drawer-shadow: -2px 0 12px rgba(15, 23, 42, 0.15);
+    --qm-connection-stroke: #ef4444;
+    --qm-selection-border: #2563eb;
+    --qm-selection-fill: rgba(37, 99, 235, 0.1);
+    --qm-node-topbar-text: #334155;
+    --qm-node-hover-tag-shadow: 0 4px 8px rgba(148, 163, 184, 0.25);
+    --qm-node-hover-tag-active-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    --qm-node-focus-ring: rgba(37, 99, 235, 0.35);
+    --qm-toolbar-button-hover: rgba(37, 99, 235, 0.12);
+    --qm-toolbar-button-active: rgba(37, 99, 235, 0.2);
+}
+
+:root[data-theme="dark"],
+body[data-theme="dark"] {
+    color-scheme: dark;
+    --qm-bg-canvas: #141517;
+    --qm-grid-color: rgba(209, 213, 219, 0.16);
+    --qm-text-default: #e2e8f0;
+    --qm-text-muted: #94a3b8;
+    --qm-surface: #111827;
+    --qm-surface-elevated: #1f2937;
+    --qm-surface-muted: rgba(30, 41, 59, 0.9);
+    --qm-border: rgba(71, 85, 105, 0.65);
+    --qm-border-strong: rgba(148, 163, 184, 0.5);
+    --qm-shadow-soft: 0 12px 30px rgba(2, 6, 23, 0.5);
+    --qm-shadow-medium: 0 12px 24px rgba(2, 6, 23, 0.6);
+    --qm-shadow-strong: 0 16px 32px rgba(2, 6, 23, 0.65);
+    --qm-accent: #60a5fa;
+    --qm-accent-strong: #3b82f6;
+    --qm-accent-soft: rgba(96, 165, 250, 0.2);
+    --qm-danger: #f87171;
+    --qm-danger-hover: #ef4444;
+    --qm-success: #34d399;
+    --qm-success-hover: #22c55e;
+    --qm-handle-bg: rgba(148, 163, 184, 0.75);
+    --qm-handle-border: rgba(15, 23, 42, 0.9);
+    --qm-handle-active: #60a5fa;
+    --qm-resize-bg: rgba(148, 163, 184, 0.6);
+    --qm-resize-active: #60a5fa;
+    --qm-drawer-bg: #0f172a;
+    --qm-drawer-border: rgba(148, 163, 184, 0.35);
+    --qm-toolbar-bg: rgba(30, 41, 59, 0.9);
+    --qm-toolbar-border: rgba(148, 163, 184, 0.25);
+    --qm-toolbar-shadow: 0 16px 40px rgba(2, 6, 23, 0.8);
+    --qm-drawer-shadow: -2px 0 24px rgba(2, 6, 23, 0.75);
+    --qm-connection-stroke: #e5e7eb;
+    --qm-selection-border: #60a5fa;
+    --qm-selection-fill: rgba(96, 165, 250, 0.18);
+    --qm-node-topbar-text: #cbd5f5;
+    --qm-node-hover-tag-shadow: 0 6px 18px rgba(2, 6, 23, 0.45);
+    --qm-node-hover-tag-active-shadow: 0 10px 24px rgba(2, 6, 23, 0.6);
+    --qm-node-focus-ring: rgba(96, 165, 250, 0.5);
+    --qm-toolbar-button-hover: rgba(96, 165, 250, 0.12);
+    --qm-toolbar-button-active: rgba(96, 165, 250, 0.22);
+}
+
+/* Apply grid background to the entire body for an infinite canvas */
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    background-color: var(--qm-bg-canvas);
+    background-image:
+        linear-gradient(0deg, var(--qm-grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--qm-grid-color) 1px, transparent 1px);
+    background-size: 20px 20px; /* Grid size */
+    background-position: 0 0;
+    transform-origin: 0 0;
+    cursor: default;
+    color: var(--qm-text-default);
+    transition: background-color 0.3s ease, color 0.3s ease, background-image 0.3s ease;
+}
+
+/* Set canvas container to cover the entire body */
+#canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    cursor: default;
+    overflow: hidden;
+}
+
+#canvas-transform {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2000px;
+    height: 2000px;
+    transform-origin: 0 0;
+    overflow: visible;
+}
+
+#canvas-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2000px;
+    height: 2000px;
+    transform-origin: 0 0;
+    background-size: inherit;
+    overflow: visible;
+}
+
+.connection-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.connection-path {
+    stroke: var(--qm-connection-stroke);
+    stroke-width: 2px;
+    fill: none;
+    pointer-events: stroke;
+    transition: stroke 0.2s ease;
+}
+
+.connection-path.connection-dashed {
+    stroke-dasharray: 6 4;
+}
+
+.connection-path.connection-animated {
+    stroke-dasharray: 12 6 !important;
+    stroke-dashoffset: 0;
+    animation: connection-dash-forward 1.2s linear infinite;
+}
+
+.connection-path.connection-animated.reverse-flow {
+    animation-direction: reverse;
+}
+
+.connection-preview {
+    pointer-events: none;
+    stroke-opacity: 0.6;
+}
+
+.connection-point.connection-hover {
+    box-shadow: 0 0 0 4px var(--qm-accent-soft);
+}
+
+.connection-path-interaction {
+    stroke: transparent;
+    stroke-width: 16;
+    pointer-events: stroke;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    cursor: pointer;
+}
+
+.connection-path-interaction.connection-selected {
+    stroke: rgba(37, 99, 235, 0.35);
+}
+
+.connection-path.connection-selected {
+    stroke: var(--qm-accent-strong);
+    stroke-width: 4;
+    filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.45));
+}
+
+@keyframes connection-dash-forward {
+    from {
+        stroke-dashoffset: 0;
+    }
+    to {
+        stroke-dashoffset: -24;
+    }
+}
+
+@keyframes connection-dash-reverse {
+    from {
+        stroke-dashoffset: 0;
+    }
+    to {
+        stroke-dashoffset: 24;
+    }
+}

@@ -137,6 +137,7 @@ export function finalizeSelection() {
 
     if (isClick) {
         clearSelection();
+        state.__clearConnectionSelection?.();
         return;
     }
 
@@ -147,4 +148,6 @@ export function finalizeSelection() {
     });
 
     setSelectedNodes(selected);
+    state.__clearConnectionSelection?.();
+    state.__selectConnectionsInRect?.(rect, { append: false });
 }

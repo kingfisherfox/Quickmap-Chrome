@@ -32,7 +32,12 @@ Whenever you edit the source files, return to `chrome://extensions/` and press *
 
 ## Project Structure
 - `index.html` – main workspace UI loaded when the extension icon is clicked.
-- `css/styles.css` – layout, node styling, and connection visuals.
+- `css/` – modular stylesheets:
+  - `base.css` for theme tokens and canvas scaffolding.
+  - `layout.css` for the header and chart controls.
+  - `nodes.css` and `node-content.css` for node frames, interactions, and content styling.
+  - `panels.css` for the settings drawer and toggles.
+  - `menus.css` for context menus and toolbars.
 - `js/` – modular JavaScript:
   - `nodes.js`, `connections.js`, `canvas.js` handle canvas interactions.
   - `charts.js` manages saving/loading charts.

@@ -16,7 +16,6 @@ const ANCHOR_DIRECTIONS = {
     Bottom: { x: 0, y: 1 },
     Left: { x: -1, y: 0 },
 };
-
 function ensureConnectionLayer() {
     if (state.connectionLayer) return state.connectionLayer;
     let layer = document.getElementById(CONNECTION_LAYER_ID);
@@ -36,20 +35,28 @@ function ensureConnectionLayer() {
     if (!layer.querySelector('#connection-markers')) {
         const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         defs.setAttribute('id', 'connection-markers');
-        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-        marker.setAttribute('id', 'connection-arrow');
-        marker.setAttribute('viewBox', '0 0 10 10');
-        marker.setAttribute('markerUnits', 'strokeWidth');
-        marker.setAttribute('markerWidth', '8');
-        marker.setAttribute('markerHeight', '8');
-        marker.setAttribute('orient', 'auto');
-        marker.setAttribute('refX', '9');
-        marker.setAttribute('refY', '5');
-        const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        arrowPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
-        arrowPath.setAttribute('fill', 'var(--qm-connection-stroke, #ef4444)');
-        marker.appendChild(arrowPath);
-        defs.appendChild(marker);
+
+        const createMarker = (id, fillVar, pathD) => {
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.setAttribute('id', id);
+            marker.setAttribute('viewBox', '0 0 10 10');
+            marker.setAttribute('markerUnits', 'strokeWidth');
+            marker.setAttribute('markerWidth', '8');
+            marker.setAttribute('markerHeight', '8');
+            marker.setAttribute('orient', 'auto');
+            marker.setAttribute('refX', '9');
+            marker.setAttribute('refY', '5');
+            const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            arrowPath.setAttribute('d', pathD);
+            arrowPath.setAttribute('fill', fillVar);
+            marker.appendChild(arrowPath);
+            return marker;
+        };
+
+        defs.appendChild(createMarker('connection-arrow-end', 'var(--qm-connection-stroke, #ef4444)', 'M 0 0 L 10 5 L 0 10 z'));
+        defs.appendChild(createMarker('connection-arrow-end-selected', 'var(--qm-accent, #2563eb)', 'M 0 0 L 10 5 L 0 10 z'));
+        defs.appendChild(createMarker('connection-arrow-start', 'var(--qm-connection-stroke, #ef4444)', 'M 10 0 L 0 5 L 10 10 z'));
+        defs.appendChild(createMarker('connection-arrow-start-selected', 'var(--qm-accent, #2563eb)', 'M 10 0 L 0 5 L 10 10 z'));
         layer.appendChild(defs);
     }
     state.connectionLayer = layer;
@@ -63,6 +70,16 @@ function updateLayerDimensions(width, height) {
     layer.setAttribute('viewBox', `0 0 ${width} ${height}`);
     layer.style.width = `${width}px`;
     layer.style.height = `${height}px`;
+}
+
+function rectanglesIntersect(a, b) {
+    if (!a || !b) return false;
+    return !(
+        a.x + a.width < b.x
+        || a.x > b.x + b.width
+        || a.y + a.height < b.y
+        || a.y > b.y + b.height
+    );
 }
 
 function getAnchorPoint(anchorEl) {
@@ -86,43 +103,56 @@ function getLayerCoordinates(clientX, clientY) {
     };
 }
 
-function resolveDirection(anchorName, fallbackVector) {
-    const direction = ANCHOR_DIRECTIONS[anchorName];
-    if (direction) return direction;
-    if (!fallbackVector) return { x: 0, y: 0 };
-    const magnitude = Math.hypot(fallbackVector.x, fallbackVector.y) || 1;
+function normalizeVector(vector) {
+    if (!vector) return { x: 0, y: 0 };
+    const magnitude = Math.hypot(vector.x, vector.y) || 1;
     return {
-        x: fallbackVector.x / magnitude,
-        y: fallbackVector.y / magnitude,
+        x: vector.x / magnitude,
+        y: vector.y / magnitude,
     };
 }
 
-function computePath(start, end, connection) {
+function resolveDirection(anchorName, fallbackVector) {
+    const preset = anchorName ? ANCHOR_DIRECTIONS[anchorName] : null;
+    if (preset) return preset;
+    if (!fallbackVector) return { x: 0, y: 0 };
+    return normalizeVector(fallbackVector);
+}
+
+function computePath(start, end, options = {}) {
     const dx = end.x - start.x;
     const dy = end.y - start.y;
-    const distance = Math.hypot(dx, dy);
+    const distance = Math.hypot(dx, dy) || 0.001;
 
-    const fallbackVector = { x: dx || 0.001, y: dy || 0.001 };
+    const fallback = { x: dx, y: dy };
+    const sourceDir = normalizeVector(resolveDirection(options.sourceAnchor, fallback));
+    const targetDir = normalizeVector(
+        resolveDirection(options.targetAnchor, { x: -fallback.x, y: -fallback.y }),
+    );
 
-    const sourceDir = resolveDirection(connection?.sourceAnchor, fallbackVector);
-    const targetDir = resolveDirection(connection?.targetAnchor, {
-        x: -fallbackVector.x,
-        y: -fallbackVector.y,
-    });
-
-    const baseCurvature = Math.max(24, Math.min(120, distance * 0.3));
+    const baseCurvature = Math.max(32, Math.min(220, distance * 0.4));
+    const curvature = Math.min(baseCurvature, distance / 1.8);
 
     const control1 = {
-        x: start.x + sourceDir.x * baseCurvature,
-        y: start.y + sourceDir.y * baseCurvature,
+        x: start.x + sourceDir.x * curvature,
+        y: start.y + sourceDir.y * curvature,
     };
 
     const control2 = {
-        x: end.x + targetDir.x * baseCurvature,
-        y: end.y + targetDir.y * baseCurvature,
+        x: end.x + targetDir.x * curvature,
+        y: end.y + targetDir.y * curvature,
     };
 
     return `M ${start.x} ${start.y} C ${control1.x} ${control1.y} ${control2.x} ${control2.y} ${end.x} ${end.y}`;
+}
+
+function syncConnectionAnimation(path) {
+    if (!path) return;
+    path.style.removeProperty('stroke-dasharray');
+    path.style.removeProperty('stroke-dashoffset');
+    path.style.removeProperty('animation');
+    path.removeAttribute('stroke-dasharray');
+    path.removeAttribute('stroke-dashoffset');
 }
 
 function updateConnectionPath(connection) {
@@ -134,34 +164,58 @@ function updateConnectionPath(connection) {
     }
     const start = getAnchorPoint(sourceAnchor);
     const end = getAnchorPoint(targetAnchor);
-    const path = computePath(start, end, connection);
+    const path = computePath(start, end, {
+        sourceAnchor: connection.sourceAnchor,
+        targetAnchor: connection.targetAnchor,
+    });
     connection.pathElement.setAttribute('d', path);
+    connection.syncInteractionPath?.();
     applyFlowDirection(connection, start, end);
+    applySelectionPresentation(connection);
+    syncConnectionAnimation(connection.pathElement);
+    console.debug('[QuickMap] Updated connection path', connection.id, {
+        sourceAnchor: connection.sourceAnchor,
+        targetAnchor: connection.targetAnchor,
+        start,
+        end,
+        animated: connection.pathElement.classList.contains(ANIMATED_CLASS),
+        reverse: connection.pathElement.classList.contains(REVERSE_CLASS),
+    });
 }
 
 function applyFlowDirection(connection, start, end) {
     const path = connection.pathElement;
     path.classList.remove(REVERSE_CLASS);
-    path.removeAttribute('marker-start');
-    path.setAttribute('marker-end', 'url(#connection-arrow)');
     const dx = end.x - start.x;
     const dy = end.y - start.y;
     const dominatesHorizontal = Math.abs(dx) >= Math.abs(dy);
     if (dominatesHorizontal ? dx < 0 : dy < 0) {
         path.classList.add(REVERSE_CLASS);
-        path.setAttribute('marker-start', 'url(#connection-arrow)');
-        path.removeAttribute('marker-end');
     }
+    path.setAttribute('marker-start', 'url(#connection-arrow-start)');
+    path.setAttribute('marker-end', 'url(#connection-arrow-end)');
+    syncConnectionAnimation(path);
 }
 
 function applyConnectionStyle(connection) {
     const path = connection.pathElement;
     path.classList.remove(DASHED_CLASS, ANIMATED_CLASS);
-    if (connection.lineStyle === EDGE_TYPE_DASHED) {
-        path.classList.add(DASHED_CLASS);
-    }
     if (state.connectionSettings.animated) {
         path.classList.add(ANIMATED_CLASS);
+    } else if (connection.lineStyle === EDGE_TYPE_DASHED) {
+        path.classList.add(DASHED_CLASS);
+    }
+    syncConnectionAnimation(path);
+    if (typeof window !== 'undefined' && window.getComputedStyle) {
+        const computed = window.getComputedStyle(path);
+        console.debug('[QuickMap] Connection style', {
+            id: connection.id,
+            animatedClass: path.classList.contains(ANIMATED_CLASS),
+            dashArray: computed.strokeDasharray,
+            dashOffset: computed.strokeDashoffset,
+            animationName: computed.animationName,
+            animationDuration: computed.animationDuration,
+        });
     }
 }
 
@@ -191,27 +245,46 @@ function createPathElement(className) {
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke', 'var(--qm-connection-stroke, #ef4444)');
     path.setAttribute('stroke-width', '2');
-    path.setAttribute('pointer-events', className.includes(PREVIEW_CLASS) ? 'none' : 'stroke');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
     if (!className.includes(PREVIEW_CLASS)) {
-        path.setAttribute('marker-end', 'url(#connection-arrow)');
+        path.classList.add(`${CONNECTION_CLASS}-interactive`);
+    }
+    path.setAttribute('pointer-events', className.includes(PREVIEW_CLASS) ? 'none' : 'visibleStroke');
+    if (!className.includes(PREVIEW_CLASS)) {
+        path.setAttribute('marker-start', 'url(#connection-arrow-start)');
+        path.setAttribute('marker-end', 'url(#connection-arrow-end)');
     }
     layer.appendChild(path);
     return path;
 }
 
+function applySelectionPresentation(connection) {
+    const path = connection.pathElement;
+    if (!path) return;
+    const selected = state.selectedConnectionIds.has(connection.id);
+
+    if (selected) {
+        path.classList.add('connection-selected');
+        connection.interactionPath?.classList.add('connection-selected');
+    } else {
+        path.classList.remove('connection-selected');
+        connection.interactionPath?.classList.remove('connection-selected');
+    }
+
+    const startMarker = selected ? 'url(#connection-arrow-start-selected)' : 'url(#connection-arrow-start)';
+    const endMarker = selected ? 'url(#connection-arrow-end-selected)' : 'url(#connection-arrow-end)';
+
+    path.setAttribute('marker-start', startMarker);
+    path.setAttribute('marker-end', endMarker);
+    syncConnectionAnimation(path);
+}
+
 function updateConnectionSelectionStyles() {
-    state.connections.forEach((connection) => {
-        if (!connection?.pathElement) return;
-        if (state.selectedConnectionIds.has(connection.id)) {
-            connection.pathElement.classList.add('connection-selected');
-        } else {
-            connection.pathElement.classList.remove('connection-selected');
-        }
-    });
+    state.connections.forEach(applySelectionPresentation);
 }
 
 export function clearConnectionSelection() {
-    if (!state.selectedConnectionIds.size) return;
     state.selectedConnectionIds.clear();
     updateConnectionSelectionStyles();
 }
@@ -248,7 +321,73 @@ function registerConnectionInteraction(connection) {
     const path = connection.pathElement;
     if (!path) return;
     path.dataset.connectionId = connection.id;
-    path.addEventListener('mousedown', (event) => handleConnectionPointerDown(event, connection));
+    const layer = ensureConnectionLayer();
+
+    const interactionPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    interactionPath.setAttribute('class', `${CONNECTION_CLASS}-interaction`);
+    interactionPath.setAttribute('fill', 'none');
+    interactionPath.setAttribute('stroke', 'transparent');
+    interactionPath.setAttribute('stroke-width', '16');
+    interactionPath.setAttribute('stroke-linecap', 'round');
+    interactionPath.setAttribute('stroke-linejoin', 'round');
+    interactionPath.setAttribute('pointer-events', 'stroke');
+    interactionPath.dataset.connectionId = connection.id;
+    layer.insertBefore(interactionPath, path.nextSibling);
+
+    const syncInteractionPath = () => {
+        const d = path.getAttribute('d');
+        if (d) {
+            interactionPath.setAttribute('d', d);
+        }
+    };
+    connection.syncInteractionPath = syncInteractionPath;
+    syncInteractionPath();
+
+    const handler = (event) => handleConnectionPointerDown(event, connection);
+    path.addEventListener('mousedown', handler);
+    interactionPath.addEventListener('mousedown', handler);
+    connection.pointerDownHandler = handler;
+    connection.interactionPath = interactionPath;
+
+    applySelectionPresentation(connection);
+    console.debug('[QuickMap] Registered connection', {
+        id: connection.id,
+        source: { id: connection.sourceId, anchor: connection.sourceAnchor },
+        target: { id: connection.targetId, anchor: connection.targetAnchor },
+        animated: path.classList.contains(ANIMATED_CLASS),
+    });
+}
+
+function expandBoundingBox(bbox, padding = 6) {
+    return {
+        x: bbox.x - padding,
+        y: bbox.y - padding,
+        width: bbox.width + (padding * 2),
+        height: bbox.height + (padding * 2),
+    };
+}
+
+export function selectConnectionsInRect(rect, options = {}) {
+    if (!rect) return [];
+    const { append = false } = options;
+    if (!append) {
+        state.selectedConnectionIds.clear();
+    }
+
+    const selectedIds = [];
+    state.connections.forEach((connection) => {
+        const path = connection.pathElement;
+        if (!path) return;
+        const bbox = path.getBBox();
+        const expanded = expandBoundingBox(bbox, 6);
+        if (rectanglesIntersect(expanded, rect)) {
+            state.selectedConnectionIds.add(connection.id);
+            selectedIds.push(connection.id);
+        }
+    });
+
+    updateConnectionSelectionStyles();
+    return selectedIds;
 }
 
 export function selectConnection(connectionId, options = {}) {
@@ -357,7 +496,15 @@ export function removeConnection(connectionId) {
     const index = state.connections.findIndex((conn) => conn.id === connectionId);
     if (index === -1) return;
     const [connection] = state.connections.splice(index, 1);
+    if (connection.pointerDownHandler) {
+        connection.pathElement?.removeEventListener('mousedown', connection.pointerDownHandler);
+        connection.interactionPath?.removeEventListener('mousedown', connection.pointerDownHandler);
+    }
     connection.pathElement?.remove();
+    connection.interactionPath?.remove();
+    connection.pointerDownHandler = null;
+    connection.interactionPath = null;
+    connection.syncInteractionPath = null;
     state.selectedConnectionIds.delete(connectionId);
     updateConnectionSelectionStyles();
     scheduleRefresh();
@@ -468,15 +615,27 @@ export function loadConnections(savedConnections = []) {
 }
 
 export function applySettingsToAllConnections() {
+    console.info('[QuickMap] Re-applying connection styling for animation toggle:', {
+        animated: state.connectionSettings.animated,
+        connectionCount: state.connections.length,
+    });
     state.connections.forEach((connection) => {
         connection.lineStyle = state.connectionSettings.animated ? EDGE_TYPE_DASHED : EDGE_TYPE_PLAIN;
         applyConnectionStyle(connection);
     });
+    updateConnectionSelectionStyles();
     scheduleRefresh();
 }
 
 export function clearConnections() {
-    state.connections.forEach((connection) => connection.pathElement?.remove());
+    state.connections.forEach((connection) => {
+        if (connection.pointerDownHandler) {
+            connection.pathElement?.removeEventListener('mousedown', connection.pointerDownHandler);
+            connection.interactionPath?.removeEventListener('mousedown', connection.pointerDownHandler);
+        }
+        connection.pathElement?.remove();
+        connection.interactionPath?.remove();
+    });
     state.connections = [];
     state.connectionIdCounter = 0;
     clearPreview();
@@ -486,7 +645,8 @@ export function clearConnections() {
         state.connectionHoverAnchor = null;
     }
     const layer = ensureConnectionLayer();
-    layer.querySelectorAll('path').forEach((path) => path.remove());
+    layer.querySelectorAll(`.${CONNECTION_CLASS}, .${CONNECTION_CLASS}-interaction, .${CONNECTION_CLASS}.${PREVIEW_CLASS}`)
+        .forEach((path) => path.remove());
     clearConnectionSelection();
     scheduleRefresh();
 }
@@ -508,3 +668,7 @@ export function updateConnectionLayerSize(width, height) {
     updateLayerDimensions(width, height);
     scheduleRefresh();
 }
+
+state.__clearConnectionSelection = clearConnectionSelection;
+state.__selectConnectionsInRect = selectConnectionsInRect;
+state.__updateConnectionSelectionStyles = updateConnectionSelectionStyles;

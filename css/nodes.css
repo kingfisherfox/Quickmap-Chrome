@@ -1,0 +1,189 @@
+/* Node container */
+.node {
+    position: absolute;
+    width: 150px;
+    min-width: 100px;
+    min-height: 60px;
+    background-color: var(--qm-surface-elevated);
+    border: 2px solid var(--qm-border-strong);
+    border-radius: 8px;
+    box-shadow: var(--qm-shadow-soft);
+    user-select: none;
+    resize: none;
+    overflow: visible;
+    color: var(--qm-text-default);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.node-hover-tag {
+    position: absolute;
+    top: -14px;
+    left: -14px;
+    width: 26px;
+    height: 26px;
+    background-color: var(--qm-surface-muted);
+    border: 2px solid var(--qm-handle-border);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--qm-node-hover-tag-shadow);
+    cursor: grab;
+    z-index: 30;
+    opacity: 0.3;
+    outline: none;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.node-hover-tag::before {
+    content: '';
+    width: 10px;
+    height: 2px;
+    background-color: var(--qm-surface);
+    border-radius: 1px;
+    box-shadow: 0 4px 0 var(--qm-surface), 0 -4px 0 var(--qm-surface);
+}
+
+.node:hover .node-hover-tag {
+    opacity: 0.6;
+}
+
+.node-hover-tag:active {
+    cursor: grabbing;
+    transform: translate(-1px, -1px);
+}
+
+.node-hover-tag:focus,
+.node-hover-tag:focus-visible {
+    box-shadow: 0 0 0 2px var(--qm-surface), 0 0 0 5px var(--qm-node-focus-ring);
+}
+
+.node:hover .node-hover-tag,
+.node:focus-within .node-hover-tag,
+.node.node-toolbar-active .node-hover-tag,
+.node.node-active .node-hover-tag {
+    background-color: var(--qm-accent);
+    box-shadow: var(--qm-node-hover-tag-active-shadow);
+    opacity: 1;
+}
+
+.node.selected .node-hover-tag {
+    background-color: var(--qm-accent-strong);
+    opacity: 1;
+    box-shadow: var(--qm-node-hover-tag-active-shadow);
+}
+
+.node.selected {
+    border-color: var(--qm-accent-strong);
+    box-shadow: 0 0 0 3px var(--qm-accent-soft), var(--qm-shadow-strong);
+}
+
+/* Top bar for drag handle and delete button */
+.node-top-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    align-items: center;
+    background-color: var(--qm-surface-muted);
+    color: var(--qm-node-topbar-text);
+    padding: 0 8px;
+    height: 30px;
+    font-weight: bold;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 18px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    cursor: move;
+    position: absolute;
+    top: -32px;
+    left: 0;
+    width: 50%;
+    transform: scaleX(0);
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: left center;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+    z-index: -1;
+    box-shadow: var(--qm-shadow-soft);
+    opacity: 0.25;
+}
+
+.node:has(.node-hover-tag:hover) .node-top-bar,
+.node:has(.node-hover-tag:focus) .node-top-bar,
+.node:has(.node-hover-tag:focus-visible) .node-top-bar,
+.node:has(.node-top-bar:hover) .node-top-bar,
+.node:has(.node-top-bar:focus-within) .node-top-bar,
+.node.node-active .node-top-bar {
+    transform: scaleX(1);
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 25;
+    background-color: var(--qm-accent);
+    color: var(--qm-text-inverse);
+}
+
+.node:has(.node-textarea:hover) .node-top-bar,
+.node:has(.node-image:hover) .node-top-bar {
+    transform: scaleX(0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.node:has(.node-textarea:focus):not(:has(.node-hover-tag:hover)):not(:has(.node-top-bar:hover)):not(:has(.node-hover-tag:focus)):not(:has(.node-hover-tag:focus-visible)) .node-top-bar,
+.node:has(.node-textarea:focus-within):not(:has(.node-hover-tag:hover)):not(:has(.node-top-bar:hover)):not(:has(.node-hover-tag:focus)):not(:has(.node-hover-tag:focus-visible)) .node-top-bar {
+    transform: scaleX(0);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.node.node-toolbar-active .node-top-bar,
+.node.node-active .node-top-bar {
+    transform: scaleX(1);
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 25;
+    background-color: var(--qm-accent);
+    color: var(--qm-text-inverse);
+}
+
+.node.node-toolbar-active .node-hover-tag,
+.node:has(.node-textarea:focus) .node-hover-tag,
+.node:has(.node-textarea:focus-within) .node-hover-tag,
+.node.node-active .node-hover-tag {
+    opacity: 1;
+}
+
+.node:hover,
+.node:focus-within,
+.node.node-toolbar-active,
+.node.node-active {
+    border-color: var(--qm-accent);
+    box-shadow: 0 0 0 3px var(--qm-accent-soft), var(--qm-shadow-strong);
+}
+
+/* Delete button */
+.node-delete-button {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 8px;
+    font-family: inherit;
+    line-height: 1;
+}
+
+.node-delete-button:hover {
+    color: var(--qm-text-muted);
+}
+
+.node-delete-button:active {
+    color: var(--qm-text-inverse);
+    transform: scale(0.95);
+}
+
+.node-delete-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--qm-surface), 0 0 0 4px var(--qm-node-focus-ring);
+}

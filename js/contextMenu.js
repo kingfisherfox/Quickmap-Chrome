@@ -11,6 +11,7 @@ import {
     getSelectedConnections,
     deleteSelectedConnections,
 } from './connections.js';
+import { exportDiagramAsImage, exportDiagramAsPdf } from './exporters.js';
 
 const MENU_ID = 'quickmap-context-menu';
 const ACTION_SELECTOR = '[data-menu-action]';
@@ -33,6 +34,8 @@ function ensureMenuElement() {
         { id: 'copy', label: 'Copy', shortcut: '⌘/Ctrl+C' },
         { id: 'paste', label: 'Paste', shortcut: '⌘/Ctrl+V' },
         { id: 'delete', label: 'Delete', shortcut: '⌫' },
+        { id: 'image', label: 'Export as image', shortcut: '' },
+        { id: 'pdf', label: 'Export as PDF', shortcut: '' },
     ];
 
     actions.forEach((action) => {
@@ -70,6 +73,8 @@ function updateMenuState() {
     const copyButton = menuElement.querySelector('[data-menu-action="copy"]');
     const pasteButton = menuElement.querySelector('[data-menu-action="paste"]');
     const deleteButton = menuElement.querySelector('[data-menu-action="delete"]');
+    const imageButton = menuElement.querySelector('[data-menu-action="image"]');
+    const pdfButton = menuElement.querySelector('[data-menu-action="pdf"]');
 
     const nodeSelectionCount = getSelectedNodes().length;
     const connectionSelectionCount = getSelectedConnections().length;
@@ -97,11 +102,26 @@ function updateMenuState() {
         deleteButton.disabled = !canDelete;
         deleteButton.setAttribute('aria-disabled', String(!canDelete));
     }
+
+    if (imageButton) {
+        imageButton.disabled = false;
+        imageButton.setAttribute('aria-disabled', 'false');
+    }
+
+    if (pdfButton) {
+        pdfButton.disabled = false;
+        pdfButton.setAttribute('aria-disabled', 'false');
+    }
 }
 
 function closeMenu() {
     if (!menuElement) return;
     if (!menuElement.classList.contains('open')) return;
+
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement && menuElement.contains(activeElement)) {
+        activeElement.blur();
+    }
 
     menuElement.classList.remove('open');
     menuElement.setAttribute('aria-hidden', 'true');
@@ -136,34 +156,49 @@ function positionMenu(pageX, pageY) {
     menuElement.style.visibility = '';
 }
 
-function handleMenuAction(actionId) {
+async function handleMenuAction(actionId) {
     if (!currentContext) return;
 
-    switch (actionId) {
-        case 'create': {
-            const node = addNode(currentContext.canvasX, currentContext.canvasY);
-            if (node) {
-                setSelectedNodes([node]);
-            }
-            break;
-        }
-        case 'copy': {
-            copyNodes({ targetNode: currentContext.targetNode });
-            break;
-        }
-        case 'paste': {
-            pasteClipboard(currentContext.canvasX, currentContext.canvasY);
-            break;
-        }
-        case 'delete': {
-            deleteSelectionForContext();
-            break;
-        }
-        default:
-            break;
-    }
+    const contextSnapshot = { ...currentContext };
 
-    closeMenu();
+    try {
+        switch (actionId) {
+            case 'create': {
+                const node = addNode(contextSnapshot.canvasX, contextSnapshot.canvasY);
+                if (node) {
+                    clearConnectionSelection();
+                    setSelectedNodes([node]);
+                }
+                break;
+            }
+            case 'copy': {
+                copyNodes({ targetNode: contextSnapshot.targetNode });
+                break;
+            }
+            case 'paste': {
+                pasteClipboard(contextSnapshot.canvasX, contextSnapshot.canvasY);
+                break;
+            }
+            case 'delete': {
+                deleteSelectionForContext();
+                break;
+            }
+            case 'image': {
+                closeMenu();
+                await exportDiagramAsImage();
+                return;
+            }
+            case 'pdf': {
+                closeMenu();
+                await exportDiagramAsPdf();
+                return;
+            }
+            default:
+                break;
+        }
+    } finally {
+        closeMenu();
+    }
 }
 
 function handleContextMenu(event) {
@@ -230,7 +265,11 @@ function handleMenuClick(event) {
     if (!target) return;
     const actionId = target.dataset.menuAction;
     if (!actionId || target.disabled) return;
-    handleMenuAction(actionId);
+    const label = target.textContent?.replace(/\s+/g, ' ').trim() || actionId;
+    Promise.resolve(handleMenuAction(actionId)).catch((error) => {
+        console.error(`Context menu action "${actionId}" failed`, error);
+        alert(`Unable to complete "${label}" action. Please try again.`);
+    });
 }
 
 function isEditableTarget(element) {
