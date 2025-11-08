@@ -859,6 +859,69 @@ body[data-theme="dark"] .toggle-slider {
     box-shadow: 0 0 0 3px var(--qm-accent-soft);
 }
 
+.context-menu {
+    position: absolute;
+    min-width: 184px;
+    background: var(--qm-surface-elevated);
+    border: 1px solid var(--qm-border);
+    border-radius: 8px;
+    box-shadow: var(--qm-shadow-strong);
+    padding: 6px 0;
+    z-index: 2500;
+    display: none;
+    color: var(--qm-text-default);
+}
+
+.context-menu.open {
+    display: block;
+}
+
+.context-menu-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.context-menu-item:hover,
+.context-menu-item:focus-visible {
+    background-color: var(--qm-accent-soft);
+    color: var(--qm-accent-strong);
+    outline: none;
+}
+
+.context-menu-item:active {
+    background-color: var(--qm-accent);
+    color: var(--qm-text-inverse);
+}
+
+.context-menu-item[disabled],
+.context-menu-item[aria-disabled="true"] {
+    color: var(--qm-text-muted);
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.context-menu-item:disabled:hover,
+.context-menu-item[aria-disabled="true"]:hover {
+    background: transparent;
+    color: var(--qm-text-muted);
+}
+
+.context-menu-shortcut {
+    font-size: 12px;
+    opacity: 0.65;
+}
+
 .connection-animated path {
     stroke-dasharray: 6;
     animation: connection-dash-forward 1.2s linear infinite;

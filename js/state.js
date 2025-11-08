@@ -23,6 +23,7 @@ export const state = {
     theme: 'light',
     lastPointerX: 200,
     lastPointerY: 200,
+    clipboard: null,
     connections: [],
     connectionIdCounter: 0,
     connectionPreview: null,

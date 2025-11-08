@@ -5,13 +5,7 @@ import { addNode } from './nodeCreation.js';
 import { NODE_TYPE_IMAGE } from './constants.js';
 
 export function setupNodeInteractions() {
-    state.canvasContainer.addEventListener('contextmenu', (event) => {
-        event.preventDefault();
-        addNode(
-            (event.pageX - state.panOffsetX) / state.scale,
-            (event.pageY - state.panOffsetY) / state.scale,
-        );
-    });
+    // Placeholder for future node-specific interactions.
 }
 
 export function initializeImagePasteHandling() {

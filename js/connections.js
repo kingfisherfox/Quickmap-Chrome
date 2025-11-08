@@ -273,40 +273,7 @@ function commitConnection(sourceAnchorEl, targetElement) {
     const targetId = anchor.dataset.nodeId;
     const targetAnchor = anchor.dataset.anchor;
 
-    if (sourceId === targetId && sourceAnchor === targetAnchor) {
-        return;
-    }
-
-    const existing = state.connections.find((conn) => (
-        conn.sourceId === sourceId
-        && conn.sourceAnchor === sourceAnchor
-        && conn.targetId === targetId
-        && conn.targetAnchor === targetAnchor
-    ));
-    if (existing) {
-        return;
-    }
-
-    const lineStyle = state.connectionSettings.animated ? EDGE_TYPE_DASHED : EDGE_TYPE_PLAIN;
-    const pathElement = createPathElement(CONNECTION_CLASS);
-    const connection = {
-        id: `conn-${state.connectionIdCounter += 1}`,
-        sourceId,
-        sourceAnchor,
-        targetId,
-        targetAnchor,
-        lineStyle,
-        pathElement,
-        deleteElement: null,
-    };
-
-    state.connections.push(connection);
-    applyConnectionStyle(connection);
-    updateConnectionPath(connection);
-    connection.deleteElement = createDeleteHandle(connection);
-    updateConnectionPath(connection);
-    markDirty();
-    scheduleRefresh();
+    createConnectionBetweenNodes(sourceId, sourceAnchor, targetId, targetAnchor);
 }
 
 export function removeConnection(connectionId) {
@@ -329,6 +296,56 @@ export function registerAnchor(node, anchorEl, anchorName) {
     anchorEl.dataset.nodeId = node.id;
     anchorEl.dataset.anchor = anchorName;
     anchorEl.addEventListener('mousedown', (event) => startConnectionDrag(event, anchorEl));
+}
+
+export function createConnectionBetweenNodes(
+    sourceId,
+    sourceAnchor,
+    targetId,
+    targetAnchor,
+    options = {},
+) {
+    if (!sourceId || !targetId || !sourceAnchor || !targetAnchor) {
+        return null;
+    }
+
+    if (sourceId === targetId && sourceAnchor === targetAnchor) {
+        return null;
+    }
+
+    const existing = state.connections.find((conn) => (
+        conn.sourceId === sourceId
+        && conn.sourceAnchor === sourceAnchor
+        && conn.targetId === targetId
+        && conn.targetAnchor === targetAnchor
+    ));
+    if (existing) {
+        return existing;
+    }
+
+    const resolvedLineStyle = options.lineStyle
+        || (state.connectionSettings.animated ? EDGE_TYPE_DASHED : EDGE_TYPE_PLAIN);
+
+    const pathElement = createPathElement(CONNECTION_CLASS);
+    const connection = {
+        id: `conn-${state.connectionIdCounter += 1}`,
+        sourceId,
+        sourceAnchor,
+        targetId,
+        targetAnchor,
+        lineStyle: resolvedLineStyle,
+        pathElement,
+        deleteElement: null,
+    };
+
+    state.connections.push(connection);
+    applyConnectionStyle(connection);
+    updateConnectionPath(connection);
+    connection.deleteElement = createDeleteHandle(connection);
+    updateConnectionPath(connection);
+    markDirty();
+    scheduleRefresh();
+    return connection;
 }
 
 export function serializeConnections() {

@@ -136,4 +136,6 @@ export function addNode(
 
     updateCanvasBounds();
     queueConnectionRefresh();
+
+    return node;
 }

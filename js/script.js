@@ -9,6 +9,7 @@ import { initializeSettingsPanel } from './settings.js';
 import { initializeTextFormatting } from './textFormatting.js';
 import { initializeSelectionOverlay } from './selection.js';
 import { initializeTheme } from './theme.js';
+import { initializeContextMenu } from './contextMenu.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeTheme();
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeChartControls();
     initializeSettingsPanel();
     initializeTextFormatting();
+    initializeContextMenu();
     updateCanvasTransform();
 
     const clearButton = document.getElementById('clear-btn');
