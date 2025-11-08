@@ -2,7 +2,12 @@
 
 import { state, markDirty } from './state.js';
 import { updateCanvasBounds, clearActiveNodes } from './nodes.js';
-import { queueConnectionRefresh, handleNodeLayoutChange, clearConnections } from './connections.js';
+import {
+    queueConnectionRefresh,
+    handleNodeLayoutChange,
+    clearConnections,
+    clearConnectionSelection,
+} from './connections.js';
 import {
     beginSelection,
     updateSelection,
@@ -49,6 +54,7 @@ export function setupCanvasInteractions() {
 
         const { x, y } = getCanvasCoordinates(event);
         clearActiveNodes();
+        clearConnectionSelection();
         beginSelection(x, y);
         event.preventDefault();
     });

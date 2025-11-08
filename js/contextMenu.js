@@ -5,6 +5,12 @@ import { state } from './state.js';
 import { addNode, deleteNode } from './nodes.js';
 import { copyNodes, pasteClipboard, hasClipboardContent } from './clipboard.js';
 import { getSelectedNodes, setSelectedNodes, isNodeSelected } from './selection.js';
+import {
+    selectConnection,
+    clearConnectionSelection,
+    getSelectedConnections,
+    deleteSelectedConnections,
+} from './connections.js';
 
 const MENU_ID = 'quickmap-context-menu';
 const ACTION_SELECTOR = '[data-menu-action]';
@@ -65,11 +71,17 @@ function updateMenuState() {
     const pasteButton = menuElement.querySelector('[data-menu-action="paste"]');
     const deleteButton = menuElement.querySelector('[data-menu-action="delete"]');
 
-    const selectionCount = getSelectedNodes().length;
-    const hasTarget = Boolean(currentContext?.targetNode);
-    const canCopy = selectionCount > 0 || hasTarget;
+    const nodeSelectionCount = getSelectedNodes().length;
+    const connectionSelectionCount = getSelectedConnections().length;
+    const hasTargetNode = Boolean(currentContext?.targetNode);
+    const hasTargetConnection = Boolean(currentContext?.targetConnectionId);
+
+    const canCopy = nodeSelectionCount > 0 || hasTargetNode;
     const canPaste = hasClipboardContent();
-    const canDelete = canCopy;
+    const canDelete = nodeSelectionCount > 0
+        || connectionSelectionCount > 0
+        || hasTargetNode
+        || hasTargetConnection;
 
     if (copyButton) {
         copyButton.disabled = !canCopy;
@@ -144,7 +156,7 @@ function handleMenuAction(actionId) {
             break;
         }
         case 'delete': {
-            deleteNodesForContext(currentContext.targetNode);
+            deleteSelectionForContext();
             break;
         }
         default:
@@ -165,11 +177,27 @@ function handleContextMenu(event) {
 
     ensureMenuElement();
 
-    const target = event.target instanceof HTMLElement ? event.target : null;
-    const targetNode = target?.closest?.('.node') || null;
+    const target = event.target;
+    const connectionPath = target?.closest?.('.connection-path');
+    const connectionId = connectionPath?.dataset?.connectionId;
+    let targetConnectionId = null;
 
-    if (targetNode && !isNodeSelected(targetNode)) {
-        setSelectedNodes([targetNode]);
+    let targetNode = target instanceof HTMLElement ? target.closest('.node') : null;
+
+    if (connectionId) {
+        targetConnectionId = connectionId;
+        selectConnection(connectionId, { append: event.shiftKey });
+        targetNode = null;
+    } else if (targetNode) {
+        if (event.shiftKey) {
+            if (!isNodeSelected(targetNode)) {
+                const combined = [...new Set([...getSelectedNodes(), targetNode])];
+                setSelectedNodes(combined);
+            }
+        } else {
+            clearConnectionSelection();
+            setSelectedNodes([targetNode]);
+        }
     }
 
     const { x, y } = getCanvasCoordinates(event.pageX, event.pageY);
@@ -179,6 +207,7 @@ function handleContextMenu(event) {
         canvasX: x,
         canvasY: y,
         targetNode,
+        targetConnectionId,
     };
 
     state.lastPointerX = event.pageX;
@@ -226,6 +255,26 @@ function deleteNodesForContext(preferredNode = null) {
     return true;
 }
 
+function deleteSelectionForContext() {
+    const preferredNode = currentContext?.targetNode || null;
+    const preferredConnectionId = currentContext?.targetConnectionId || null;
+    let deleted = deleteNodesForContext(preferredNode);
+
+    const selectedConnections = getSelectedConnections();
+    if (selectedConnections.length) {
+        deleteSelectedConnections();
+        deleted = true;
+    } else if (preferredConnectionId) {
+        selectConnection(preferredConnectionId);
+        if (getSelectedConnections().length) {
+            deleteSelectedConnections();
+            deleted = true;
+        }
+    }
+
+    return deleted;
+}
+
 function handleGlobalKeyDown(event) {
     if (event.key === 'Escape') {
         closeMenu();
@@ -258,8 +307,7 @@ function handleGlobalKeyDown(event) {
     }
 
     if (!isModKey && (event.key === 'Delete' || event.key === 'Backspace')) {
-        const preferredNode = currentContext?.targetNode;
-        if (deleteNodesForContext(preferredNode)) {
+        if (deleteSelectionForContext()) {
             event.preventDefault();
         }
     }

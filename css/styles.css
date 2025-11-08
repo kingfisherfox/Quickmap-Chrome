@@ -31,7 +31,7 @@
     --qm-toolbar-border: #d0d7de;
     --qm-toolbar-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
     --qm-drawer-shadow: -2px 0 12px rgba(15, 23, 42, 0.15);
-    --qm-connection-stroke: #2563eb;
+    --qm-connection-stroke: #ef4444;
     --qm-selection-border: #2563eb;
     --qm-selection-fill: rgba(37, 99, 235, 0.1);
     --qm-node-topbar-text: #334155;
@@ -75,7 +75,7 @@ body[data-theme="dark"] {
     --qm-toolbar-border: rgba(148, 163, 184, 0.25);
     --qm-toolbar-shadow: 0 16px 40px rgba(2, 6, 23, 0.8);
     --qm-drawer-shadow: -2px 0 24px rgba(2, 6, 23, 0.75);
-    --qm-connection-stroke: #60a5fa;
+    --qm-connection-stroke: #e5e7eb;
     --qm-selection-border: #60a5fa;
     --qm-selection-fill: rgba(96, 165, 250, 0.18);
     --qm-node-topbar-text: #cbd5f5;
@@ -173,31 +173,10 @@ body {
     box-shadow: 0 0 0 4px var(--qm-accent-soft);
 }
 
-.connection-delete {
-    cursor: pointer;
-    pointer-events: auto;
-}
-
-.connection-delete circle {
-    fill: var(--qm-surface);
-    stroke: var(--qm-connection-stroke);
-    stroke-width: 2;
-}
-
-.connection-delete text {
-    fill: var(--qm-connection-stroke);
-    font-size: 12px;
-    font-family: 'Poppins', 'Roboto', sans-serif;
-    dominant-baseline: middle;
-    text-anchor: middle;
-}
-
-.connection-delete:hover circle {
-    fill: var(--qm-connection-stroke);
-}
-
-.connection-delete:hover text {
-    fill: var(--qm-text-inverse);
+.connection-path.connection-selected {
+    stroke: var(--qm-accent);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.35));
 }
 
 /* Header styles */

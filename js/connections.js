@@ -1,6 +1,7 @@
 // connections.js
 
 import { state, markDirty, scheduleConnectionRefresh } from './state.js';
+import { clearSelection } from './selection.js';
 import { EDGE_TYPE_PLAIN, EDGE_TYPE_DASHED } from './edgeStyles.js';
 
 const CONNECTION_LAYER_ID = 'connection-layer';
@@ -9,7 +10,12 @@ const CONNECTION_CLASS = 'connection-path';
 const DASHED_CLASS = 'connection-dashed';
 const ANIMATED_CLASS = 'connection-animated';
 const REVERSE_CLASS = 'reverse-flow';
-const DELETE_GROUP_CLASS = 'connection-delete';
+const ANCHOR_DIRECTIONS = {
+    Top: { x: 0, y: -1 },
+    Right: { x: 1, y: 0 },
+    Bottom: { x: 0, y: 1 },
+    Left: { x: -1, y: 0 },
+};
 
 function ensureConnectionLayer() {
     if (state.connectionLayer) return state.connectionLayer;
@@ -41,7 +47,7 @@ function ensureConnectionLayer() {
         marker.setAttribute('refY', '5');
         const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         arrowPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
-        arrowPath.setAttribute('fill', '#007BFF');
+        arrowPath.setAttribute('fill', 'var(--qm-connection-stroke, #ef4444)');
         marker.appendChild(arrowPath);
         defs.appendChild(marker);
         layer.appendChild(defs);
@@ -80,18 +86,42 @@ function getLayerCoordinates(clientX, clientY) {
     };
 }
 
-function computePath(start, end) {
+function resolveDirection(anchorName, fallbackVector) {
+    const direction = ANCHOR_DIRECTIONS[anchorName];
+    if (direction) return direction;
+    if (!fallbackVector) return { x: 0, y: 0 };
+    const magnitude = Math.hypot(fallbackVector.x, fallbackVector.y) || 1;
+    return {
+        x: fallbackVector.x / magnitude,
+        y: fallbackVector.y / magnitude,
+    };
+}
+
+function computePath(start, end, connection) {
     const dx = end.x - start.x;
     const dy = end.y - start.y;
-    const curvature = Math.min(160, Math.abs(dx) * 0.5 + Math.abs(dy) * 0.5);
+    const distance = Math.hypot(dx, dy);
+
+    const fallbackVector = { x: dx || 0.001, y: dy || 0.001 };
+
+    const sourceDir = resolveDirection(connection?.sourceAnchor, fallbackVector);
+    const targetDir = resolveDirection(connection?.targetAnchor, {
+        x: -fallbackVector.x,
+        y: -fallbackVector.y,
+    });
+
+    const baseCurvature = Math.max(24, Math.min(120, distance * 0.3));
+
     const control1 = {
-        x: start.x + curvature,
-        y: start.y,
+        x: start.x + sourceDir.x * baseCurvature,
+        y: start.y + sourceDir.y * baseCurvature,
     };
+
     const control2 = {
-        x: end.x - curvature,
-        y: end.y,
+        x: end.x + targetDir.x * baseCurvature,
+        y: end.y + targetDir.y * baseCurvature,
     };
+
     return `M ${start.x} ${start.y} C ${control1.x} ${control1.y} ${control2.x} ${control2.y} ${end.x} ${end.y}`;
 }
 
@@ -104,10 +134,9 @@ function updateConnectionPath(connection) {
     }
     const start = getAnchorPoint(sourceAnchor);
     const end = getAnchorPoint(targetAnchor);
-    const path = computePath(start, end);
+    const path = computePath(start, end, connection);
     connection.pathElement.setAttribute('d', path);
     applyFlowDirection(connection, start, end);
-    updateDeletePosition(connection, start, end);
 }
 
 function applyFlowDirection(connection, start, end) {
@@ -160,7 +189,7 @@ function createPathElement(className) {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('class', className);
     path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', '#007BFF');
+    path.setAttribute('stroke', 'var(--qm-connection-stroke, #ef4444)');
     path.setAttribute('stroke-width', '2');
     path.setAttribute('pointer-events', className.includes(PREVIEW_CLASS) ? 'none' : 'stroke');
     if (!className.includes(PREVIEW_CLASS)) {
@@ -170,34 +199,79 @@ function createPathElement(className) {
     return path;
 }
 
-function createDeleteHandle(connection) {
-    const layer = ensureConnectionLayer();
-    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    group.setAttribute('class', DELETE_GROUP_CLASS);
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('r', '10');
-    circle.setAttribute('cx', '0');
-    circle.setAttribute('cy', '0');
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', '0');
-    text.setAttribute('y', '0');
-    text.textContent = '×';
-    group.appendChild(circle);
-    group.appendChild(text);
-    group.addEventListener('click', (event) => {
-        event.stopPropagation();
-        removeConnection(connection.id);
-        markDirty();
+function updateConnectionSelectionStyles() {
+    state.connections.forEach((connection) => {
+        if (!connection?.pathElement) return;
+        if (state.selectedConnectionIds.has(connection.id)) {
+            connection.pathElement.classList.add('connection-selected');
+        } else {
+            connection.pathElement.classList.remove('connection-selected');
+        }
     });
-    layer.appendChild(group);
-    return group;
 }
 
-function updateDeletePosition(connection, start, end) {
-    if (!connection.deleteElement) return;
-    const midX = (start.x + end.x) / 2;
-    const midY = (start.y + end.y) / 2;
-    connection.deleteElement.setAttribute('transform', `translate(${midX}, ${midY})`);
+export function clearConnectionSelection() {
+    if (!state.selectedConnectionIds.size) return;
+    state.selectedConnectionIds.clear();
+    updateConnectionSelectionStyles();
+}
+
+function toggleConnectionSelection(connectionId, options = {}) {
+    const { append = false } = options;
+    const alreadySelected = state.selectedConnectionIds.has(connectionId);
+    if (!append) {
+        state.selectedConnectionIds.clear();
+    }
+
+    if (append && alreadySelected) {
+        state.selectedConnectionIds.delete(connectionId);
+    } else {
+        state.selectedConnectionIds.add(connectionId);
+    }
+    updateConnectionSelectionStyles();
+}
+
+function handleConnectionPointerDown(event, connection) {
+    if (event.button !== 0) return;
+    event.stopPropagation();
+    clearSelection();
+
+    if (!event.shiftKey) {
+        clearConnectionSelection();
+        toggleConnectionSelection(connection.id, { append: true });
+    } else {
+        toggleConnectionSelection(connection.id, { append: true });
+    }
+}
+
+function registerConnectionInteraction(connection) {
+    const path = connection.pathElement;
+    if (!path) return;
+    path.dataset.connectionId = connection.id;
+    path.addEventListener('mousedown', (event) => handleConnectionPointerDown(event, connection));
+}
+
+export function selectConnection(connectionId, options = {}) {
+    if (!connectionId) return;
+    const { append = false } = options;
+    clearSelection();
+    if (!append) {
+        clearConnectionSelection();
+    }
+    state.selectedConnectionIds.add(connectionId);
+    updateConnectionSelectionStyles();
+}
+
+export function getSelectedConnections() {
+    return state.connections.filter((connection) => state.selectedConnectionIds.has(connection.id));
+}
+
+export function deleteSelectedConnections() {
+    if (!state.selectedConnectionIds.size) return;
+    const ids = Array.from(state.selectedConnectionIds);
+    ids.forEach((connectionId) => removeConnection(connectionId));
+    markDirty();
+    clearConnectionSelection();
 }
 
 function startConnectionDrag(event, anchorEl) {
@@ -222,7 +296,10 @@ function startConnectionDrag(event, anchorEl) {
     const onMove = (moveEvent) => {
         const anchorPoint = getAnchorPoint(anchorEl);
         const endPoint = getLayerCoordinates(moveEvent.clientX, moveEvent.clientY);
-        const path = computePath(anchorPoint, endPoint);
+        const path = computePath(anchorPoint, endPoint, {
+            sourceAnchor,
+            targetAnchor: null,
+        });
         previewPath.setAttribute('d', path);
 
         const potential = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY);
@@ -281,7 +358,8 @@ export function removeConnection(connectionId) {
     if (index === -1) return;
     const [connection] = state.connections.splice(index, 1);
     connection.pathElement?.remove();
-    connection.deleteElement?.remove();
+    state.selectedConnectionIds.delete(connectionId);
+    updateConnectionSelectionStyles();
     scheduleRefresh();
 }
 
@@ -335,14 +413,13 @@ export function createConnectionBetweenNodes(
         targetAnchor,
         lineStyle: resolvedLineStyle,
         pathElement,
-        deleteElement: null,
     };
 
     state.connections.push(connection);
+    registerConnectionInteraction(connection);
     applyConnectionStyle(connection);
     updateConnectionPath(connection);
-    connection.deleteElement = createDeleteHandle(connection);
-    updateConnectionPath(connection);
+    updateConnectionSelectionStyles();
     markDirty();
     scheduleRefresh();
     return connection;
@@ -376,18 +453,17 @@ export function loadConnections(savedConnections = []) {
             targetAnchor: targetAnchorName,
             lineStyle: data.lineStyle || EDGE_TYPE_PLAIN,
             pathElement,
-            deleteElement: null,
         };
         applyConnectionStyle(connection);
         state.connections.push(connection);
+        registerConnectionInteraction(connection);
         updateConnectionPath(connection);
         const numericId = Number.parseInt(String(connection.id).replace(/[^0-9]/g, ''), 10);
         if (!Number.isNaN(numericId)) {
             state.connectionIdCounter = Math.max(state.connectionIdCounter, numericId);
         }
-        connection.deleteElement = createDeleteHandle(connection);
-        updateConnectionPath(connection);
     });
+    updateConnectionSelectionStyles();
     scheduleRefresh();
 }
 
@@ -401,7 +477,6 @@ export function applySettingsToAllConnections() {
 
 export function clearConnections() {
     state.connections.forEach((connection) => connection.pathElement?.remove());
-    state.connections.forEach((connection) => connection.deleteElement?.remove());
     state.connections = [];
     state.connectionIdCounter = 0;
     clearPreview();
@@ -412,6 +487,7 @@ export function clearConnections() {
     }
     const layer = ensureConnectionLayer();
     layer.querySelectorAll('path').forEach((path) => path.remove());
+    clearConnectionSelection();
     scheduleRefresh();
 }
 

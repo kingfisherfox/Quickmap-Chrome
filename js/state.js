@@ -32,6 +32,7 @@ export const state = {
     connectionLayer: null,
     _connectionRefreshScheduled: false,
     selectedNodes: new Set(),
+    selectedConnectionIds: new Set(),
     isSelecting: false,
     selectionStartX: 0,
     selectionStartY: 0,

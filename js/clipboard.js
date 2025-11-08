@@ -4,7 +4,7 @@
 import { state } from './state.js';
 import { addNode } from './nodes.js';
 import { getSelectedNodes, setSelectedNodes } from './selection.js';
-import { createConnectionBetweenNodes } from './connections.js';
+import { createConnectionBetweenNodes, clearConnectionSelection } from './connections.js';
 import { NODE_TYPE_TEXT, NODE_TYPE_IMAGE } from './nodes/constants.js';
 
 function parseNumeric(value, fallback = 0) {
@@ -156,6 +156,7 @@ export function pasteClipboard(canvasX, canvasY) {
     });
 
     if (newlyCreatedNodes.length) {
+        clearConnectionSelection();
         setSelectedNodes(newlyCreatedNodes);
         return true;
     }
