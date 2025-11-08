@@ -2,7 +2,7 @@
 // Provides a custom right-click menu for canvas interactions.
 
 import { state } from './state.js';
-import { addNode } from './nodes.js';
+import { addNode, deleteNode } from './nodes.js';
 import { copyNodes, pasteClipboard, hasClipboardContent } from './clipboard.js';
 import { getSelectedNodes, setSelectedNodes, isNodeSelected } from './selection.js';
 
@@ -26,6 +26,7 @@ function ensureMenuElement() {
         { id: 'create', label: 'Create node', shortcut: 'Enter' },
         { id: 'copy', label: 'Copy', shortcut: '⌘/Ctrl+C' },
         { id: 'paste', label: 'Paste', shortcut: '⌘/Ctrl+V' },
+        { id: 'delete', label: 'Delete', shortcut: '⌫' },
     ];
 
     actions.forEach((action) => {
@@ -62,11 +63,13 @@ function updateMenuState() {
 
     const copyButton = menuElement.querySelector('[data-menu-action="copy"]');
     const pasteButton = menuElement.querySelector('[data-menu-action="paste"]');
+    const deleteButton = menuElement.querySelector('[data-menu-action="delete"]');
 
     const selectionCount = getSelectedNodes().length;
     const hasTarget = Boolean(currentContext?.targetNode);
     const canCopy = selectionCount > 0 || hasTarget;
     const canPaste = hasClipboardContent();
+    const canDelete = canCopy;
 
     if (copyButton) {
         copyButton.disabled = !canCopy;
@@ -76,6 +79,11 @@ function updateMenuState() {
     if (pasteButton) {
         pasteButton.disabled = !canPaste;
         pasteButton.setAttribute('aria-disabled', String(!canPaste));
+    }
+
+    if (deleteButton) {
+        deleteButton.disabled = !canDelete;
+        deleteButton.setAttribute('aria-disabled', String(!canDelete));
     }
 }
 
@@ -135,6 +143,10 @@ function handleMenuAction(actionId) {
             pasteClipboard(currentContext.canvasX, currentContext.canvasY);
             break;
         }
+        case 'delete': {
+            deleteNodesForContext(currentContext.targetNode);
+            break;
+        }
         default:
             break;
     }
@@ -151,7 +163,7 @@ function handleContextMenu(event) {
     event.preventDefault();
     event.stopPropagation();
 
-    const menu = ensureMenuElement();
+    ensureMenuElement();
 
     const target = event.target instanceof HTMLElement ? event.target : null;
     const targetNode = target?.closest?.('.node') || null;
@@ -184,18 +196,73 @@ function handlePointerDown(event) {
     closeMenu();
 }
 
-function handleKeyDown(event) {
-    if (event.key === 'Escape') {
-        closeMenu();
-    }
-}
-
 function handleMenuClick(event) {
     const target = event.target instanceof HTMLElement ? event.target.closest(ACTION_SELECTOR) : null;
     if (!target) return;
     const actionId = target.dataset.menuAction;
     if (!actionId || target.disabled) return;
     handleMenuAction(actionId);
+}
+
+function isEditableTarget(element) {
+    if (!element || !(element instanceof HTMLElement)) return false;
+    if (element.isContentEditable) return true;
+    const tag = element.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+}
+
+function getCanvasCoordinatesFromPage(pageX, pageY) {
+    return getCanvasCoordinates(pageX, pageY);
+}
+
+function deleteNodesForContext(preferredNode = null) {
+    const selected = getSelectedNodes();
+    const nodesToDelete = selected.length
+        ? selected
+        : (preferredNode ? [preferredNode] : []);
+    const uniqueNodes = Array.from(new Set(nodesToDelete));
+    if (!uniqueNodes.length) return false;
+    uniqueNodes.forEach((node) => deleteNode(node));
+    return true;
+}
+
+function handleGlobalKeyDown(event) {
+    if (event.key === 'Escape') {
+        closeMenu();
+        return;
+    }
+
+    const activeElement = document.activeElement;
+    if (isEditableTarget(activeElement)) {
+        return;
+    }
+
+    const isModKey = event.metaKey || event.ctrlKey;
+    const key = event.key.toLowerCase();
+
+    if (isModKey && key === 'c') {
+        if (copyNodes()) {
+            event.preventDefault();
+        }
+        return;
+    }
+
+    if (isModKey && key === 'v') {
+        if (hasClipboardContent()) {
+            const { x, y } = getCanvasCoordinatesFromPage(state.lastPointerX, state.lastPointerY);
+            if (pasteClipboard(x, y)) {
+                event.preventDefault();
+            }
+        }
+        return;
+    }
+
+    if (!isModKey && (event.key === 'Delete' || event.key === 'Backspace')) {
+        const preferredNode = currentContext?.targetNode;
+        if (deleteNodesForContext(preferredNode)) {
+            event.preventDefault();
+        }
+    }
 }
 
 export function initializeContextMenu() {
@@ -211,7 +278,7 @@ export function initializeContextMenu() {
     document.addEventListener('scroll', closeMenu, true);
     window.addEventListener('blur', closeMenu);
     window.addEventListener('resize', closeMenu);
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleGlobalKeyDown);
     menuElement?.addEventListener('click', handleMenuClick);
     menuElement?.addEventListener('contextmenu', (event) => event.preventDefault());
 
