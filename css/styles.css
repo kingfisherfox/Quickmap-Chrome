@@ -1,16 +1,106 @@
+:root {
+    color-scheme: light;
+    --qm-bg-canvas: #f8f9fa;
+    --qm-grid-color: rgba(15, 23, 42, 0.08);
+    --qm-text-default: #0f172a;
+    --qm-text-muted: #475569;
+    --qm-text-inverse: #f8fafc;
+    --qm-surface: #ffffff;
+    --qm-surface-elevated: #ffffff;
+    --qm-surface-muted: rgba(241, 245, 249, 0.9);
+    --qm-border: #d0d7de;
+    --qm-border-strong: rgba(148, 163, 184, 0.6);
+    --qm-shadow-soft: 0 4px 8px rgba(0, 0, 0, 0.06);
+    --qm-shadow-medium: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    --qm-shadow-strong: 0 6px 16px rgba(0, 0, 0, 0.12);
+    --qm-accent: #2563eb;
+    --qm-accent-strong: #1d4ed8;
+    --qm-accent-soft: rgba(37, 99, 235, 0.15);
+    --qm-danger: #ef4444;
+    --qm-danger-hover: #dc2626;
+    --qm-success: #22c55e;
+    --qm-success-hover: #16a34a;
+    --qm-handle-bg: rgba(203, 213, 225, 0.85);
+    --qm-handle-border: #ffffff;
+    --qm-handle-active: #2563eb;
+    --qm-resize-bg: rgba(203, 213, 225, 0.8);
+    --qm-resize-active: #2563eb;
+    --qm-drawer-bg: #ffffff;
+    --qm-drawer-border: #d0d7de;
+    --qm-toolbar-bg: rgba(255, 255, 255, 0.95);
+    --qm-toolbar-border: #d0d7de;
+    --qm-toolbar-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    --qm-drawer-shadow: -2px 0 12px rgba(15, 23, 42, 0.15);
+    --qm-connection-stroke: #2563eb;
+    --qm-selection-border: #2563eb;
+    --qm-selection-fill: rgba(37, 99, 235, 0.1);
+    --qm-node-topbar-text: #334155;
+    --qm-node-hover-tag-shadow: 0 4px 8px rgba(148, 163, 184, 0.25);
+    --qm-node-hover-tag-active-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    --qm-node-focus-ring: rgba(37, 99, 235, 0.35);
+    --qm-toolbar-button-hover: rgba(37, 99, 235, 0.12);
+    --qm-toolbar-button-active: rgba(37, 99, 235, 0.2);
+}
+
+:root[data-theme="dark"],
+body[data-theme="dark"] {
+    color-scheme: dark;
+    --qm-bg-canvas: #141517;
+    --qm-grid-color: rgba(209, 213, 219, 0.16);
+    --qm-text-default: #e2e8f0;
+    --qm-text-muted: #94a3b8;
+    --qm-surface: #111827;
+    --qm-surface-elevated: #1f2937;
+    --qm-surface-muted: rgba(30, 41, 59, 0.9);
+    --qm-border: rgba(71, 85, 105, 0.65);
+    --qm-border-strong: rgba(148, 163, 184, 0.5);
+    --qm-shadow-soft: 0 12px 30px rgba(2, 6, 23, 0.5);
+    --qm-shadow-medium: 0 12px 24px rgba(2, 6, 23, 0.6);
+    --qm-shadow-strong: 0 16px 32px rgba(2, 6, 23, 0.65);
+    --qm-accent: #60a5fa;
+    --qm-accent-strong: #3b82f6;
+    --qm-accent-soft: rgba(96, 165, 250, 0.2);
+    --qm-danger: #f87171;
+    --qm-danger-hover: #ef4444;
+    --qm-success: #34d399;
+    --qm-success-hover: #22c55e;
+    --qm-handle-bg: rgba(148, 163, 184, 0.75);
+    --qm-handle-border: rgba(15, 23, 42, 0.9);
+    --qm-handle-active: #60a5fa;
+    --qm-resize-bg: rgba(148, 163, 184, 0.6);
+    --qm-resize-active: #60a5fa;
+    --qm-drawer-bg: #0f172a;
+    --qm-drawer-border: rgba(148, 163, 184, 0.35);
+    --qm-toolbar-bg: rgba(30, 41, 59, 0.9);
+    --qm-toolbar-border: rgba(148, 163, 184, 0.25);
+    --qm-toolbar-shadow: 0 16px 40px rgba(2, 6, 23, 0.8);
+    --qm-drawer-shadow: -2px 0 24px rgba(2, 6, 23, 0.75);
+    --qm-connection-stroke: #60a5fa;
+    --qm-selection-border: #60a5fa;
+    --qm-selection-fill: rgba(96, 165, 250, 0.18);
+    --qm-node-topbar-text: #cbd5f5;
+    --qm-node-hover-tag-shadow: 0 6px 18px rgba(2, 6, 23, 0.45);
+    --qm-node-hover-tag-active-shadow: 0 10px 24px rgba(2, 6, 23, 0.6);
+    --qm-node-focus-ring: rgba(96, 165, 250, 0.5);
+    --qm-toolbar-button-hover: rgba(96, 165, 250, 0.12);
+    --qm-toolbar-button-active: rgba(96, 165, 250, 0.22);
+}
+
 /* Apply grid background to the entire body for an infinite canvas */
 body {
     margin: 0;
     overflow: hidden;
     font-family: 'Poppins', 'Roboto', sans-serif;
-    background-color: #f8f9fa;
+    background-color: var(--qm-bg-canvas);
     background-image:
-        linear-gradient(0deg, rgba(0,0,0,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+        linear-gradient(0deg, var(--qm-grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--qm-grid-color) 1px, transparent 1px);
     background-size: 20px 20px; /* Grid size */
     background-position: 0 0;
     transform-origin: 0 0;
     cursor: default;
+    color: var(--qm-text-default);
+    transition: background-color 0.3s ease, color 0.3s ease, background-image 0.3s ease;
 }
 
 /* Set canvas container to cover the entire body */
@@ -55,7 +145,7 @@ body {
 }
 
 .connection-path {
-    stroke: #007BFF;
+    stroke: var(--qm-connection-stroke);
     stroke-width: 2px;
     fill: none;
     pointer-events: stroke;
@@ -80,7 +170,7 @@ body {
 }
 
 .connection-point.connection-hover {
-    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.35);
+    box-shadow: 0 0 0 4px var(--qm-accent-soft);
 }
 
 .connection-delete {
@@ -89,13 +179,13 @@ body {
 }
 
 .connection-delete circle {
-    fill: #ffffff;
-    stroke: #007BFF;
+    fill: var(--qm-surface);
+    stroke: var(--qm-connection-stroke);
     stroke-width: 2;
 }
 
 .connection-delete text {
-    fill: #007BFF;
+    fill: var(--qm-connection-stroke);
     font-size: 12px;
     font-family: 'Poppins', 'Roboto', sans-serif;
     dominant-baseline: middle;
@@ -103,11 +193,11 @@ body {
 }
 
 .connection-delete:hover circle {
-    fill: #007BFF;
+    fill: var(--qm-connection-stroke);
 }
 
 .connection-delete:hover text {
-    fill: #ffffff;
+    fill: var(--qm-text-inverse);
 }
 
 /* Header styles */
@@ -116,15 +206,15 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    background-color: #007BFF;
-    color: white;
+    background-color: var(--qm-accent-strong);
+    color: var(--qm-text-inverse);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 10px 16px;
     padding: 10px 20px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--qm-shadow-medium);
     z-index: 1000;
     box-sizing: border-box;
 }
@@ -135,23 +225,24 @@ body {
     font-weight: bold;
     font-family: 'Poppins', sans-serif;
     flex: 0 0 auto;
+    color: inherit;
 }
 
 #header-bar #clear-btn {
-    background-color: #FF4D4D;
-    color: white;
+    background-color: var(--qm-danger);
+    color: var(--qm-text-inverse);
     border: none;
     border-radius: 4px;
     padding: 8px 12px;
     font-size: 14px;
     cursor: pointer;
     font-family: 'Poppins', sans-serif;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--qm-shadow-medium);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
 }
 
 #header-bar #clear-btn:hover {
-    background-color: #E63939;
-
+    background-color: var(--qm-danger-hover);
 }
 
 .chart-controls {
@@ -166,20 +257,33 @@ body {
 
 .chart-controls input,
 .chart-controls select {
-    border: 1px solid #d0d7de;
+    border: 1px solid var(--qm-border);
     border-radius: 4px;
     padding: 6px 8px;
     font-size: 14px;
     font-family: 'Poppins', sans-serif;
-    background-color: #ffffff;
+    background-color: var(--qm-surface);
+    color: var(--qm-text-default);
     min-height: 34px;
     flex: 1 1 160px;
     min-width: 120px;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .chart-controls select {
     min-width: 180px;
     flex: 1 1 180px;
+}
+
+.chart-controls input:focus,
+.chart-controls select:focus {
+    outline: none;
+    border-color: var(--qm-accent);
+    box-shadow: 0 0 0 3px var(--qm-accent-soft);
+}
+
+.chart-controls input::placeholder {
+    color: var(--qm-text-muted);
 }
 
 .chart-controls button {
@@ -189,32 +293,38 @@ body {
     font-size: 14px;
     cursor: pointer;
     font-family: 'Poppins', sans-serif;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-    background-color: #007BFF;
-    color: #ffffff;
+    box-shadow: var(--qm-shadow-medium);
+    background-color: var(--qm-accent);
+    color: var(--qm-text-inverse);
     flex: 0 0 auto;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
 }
 
 .chart-controls button:hover {
-    background-color: #0062cc;
+    background-color: var(--qm-accent-strong);
+}
+
+.chart-controls button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--qm-accent-soft), var(--qm-shadow-medium);
 }
 
 .chart-controls #save-chart-btn {
-    background-color: #28a745;
+    background-color: var(--qm-success);
 }
 
 .chart-controls #save-chart-btn:hover {
-    background-color: #1f8536;
+    background-color: var(--qm-success-hover);
 }
 
 .chart-controls #delete-chart-btn,
 .chart-controls #clear-btn {
-    background-color: #FF4D4D;
+    background-color: var(--qm-danger);
 }
 
 .chart-controls #delete-chart-btn:hover,
 .chart-controls #clear-btn:hover {
-    background-color: #E63939;
+    background-color: var(--qm-danger-hover);
 }
 
 .chart-controls #settings-btn {
@@ -224,12 +334,20 @@ body {
     padding: 0;
     font-size: 20px;
     line-height: 1;
-    color: #ffffff;
+    color: inherit;
     cursor: pointer;
+    transition: opacity 0.2s ease;
 }
 
 .chart-controls #settings-btn:hover {
-    color: #dfe3e6;
+    opacity: 0.85;
+}
+
+.chart-controls #settings-btn:focus-visible {
+    outline: none;
+    opacity: 1;
+    box-shadow: 0 0 0 3px var(--qm-accent-soft);
+    border-radius: 50%;
 }
 
 
@@ -240,14 +358,15 @@ body {
     width: 150px;
     min-width: 100px;
     min-height: 60px;
-    background-color: #ffffff;
-    border: 2px solid rgba(148, 163, 184, 0.6);
+    background-color: var(--qm-surface-elevated);
+    border: 2px solid var(--qm-border-strong);
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--qm-shadow-soft);
     user-select: none;
     resize: none;
     overflow: visible;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    color: var(--qm-text-default);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .node-hover-tag {
@@ -256,13 +375,13 @@ body {
     left: -14px;
     width: 26px;
     height: 26px;
-    background-color: rgba(226, 232, 240, 0.9);
-    border: 2px solid #ffffff;
+    background-color: var(--qm-surface-muted);
+    border: 2px solid var(--qm-handle-border);
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 8px rgba(148, 163, 184, 0.25);
+    box-shadow: var(--qm-node-hover-tag-shadow);
     cursor: grab;
     z-index: 30;
     opacity: 0.3;
@@ -274,9 +393,9 @@ body {
     content: '';
     width: 10px;
     height: 2px;
-    background-color: #ffffff;
+    background-color: var(--qm-surface);
     border-radius: 1px;
-    box-shadow: 0 4px 0 #ffffff, 0 -4px 0 #ffffff;
+    box-shadow: 0 4px 0 var(--qm-surface), 0 -4px 0 var(--qm-surface);
 }
 
 .node:hover .node-hover-tag {
@@ -290,27 +409,27 @@ body {
 
 .node-hover-tag:focus,
 .node-hover-tag:focus-visible {
-    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px rgba(0, 123, 255, 0.35);
+    box-shadow: 0 0 0 2px var(--qm-surface), 0 0 0 5px var(--qm-node-focus-ring);
 }
 
 .node:hover .node-hover-tag,
 .node:focus-within .node-hover-tag,
 .node.node-toolbar-active .node-hover-tag,
 .node.node-active .node-hover-tag {
-    background-color: #007BFF;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    background-color: var(--qm-accent);
+    box-shadow: var(--qm-node-hover-tag-active-shadow);
     opacity: 1;
 }
 
 .node.selected .node-hover-tag {
-    background-color: #0b5ed7;
+    background-color: var(--qm-accent-strong);
     opacity: 1;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    box-shadow: var(--qm-node-hover-tag-active-shadow);
 }
 
 .node.selected {
-    border-color: #0b5ed7;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25), 0 4px 12px rgba(0, 0, 0, 0.12);
+    border-color: var(--qm-accent-strong);
+    box-shadow: 0 0 0 3px var(--qm-accent-soft), var(--qm-shadow-strong);
 }
 
 /* Top bar for drag handle and delete button */
@@ -319,8 +438,8 @@ body {
     justify-content: flex-end;
     gap: 8px;
     align-items: center;
-    background-color: rgba(226, 232, 240, 0.95);
-    color: #334155;
+    background-color: var(--qm-surface-muted);
+    color: var(--qm-node-topbar-text);
     padding: 0 8px;
     height: 30px;
     font-weight: bold;
@@ -339,7 +458,7 @@ body {
     transform-origin: left center;
     transition: transform 0.25s ease, opacity 0.2s ease;
     z-index: -1;
-    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+    box-shadow: var(--qm-shadow-soft);
     opacity: 0.25;
 }
 
@@ -353,8 +472,8 @@ body {
     opacity: 1;
     pointer-events: auto;
     z-index: 25;
-    background-color: #007BFF;
-    color: #ffffff;
+    background-color: var(--qm-accent);
+    color: var(--qm-text-inverse);
 }
 
 .node:has(.node-textarea:hover) .node-top-bar,
@@ -377,8 +496,8 @@ body {
     opacity: 1;
     pointer-events: auto;
     z-index: 25;
-    background-color: #007BFF;
-    color: #ffffff;
+    background-color: var(--qm-accent);
+    color: var(--qm-text-inverse);
 }
 
 .node.node-toolbar-active .node-hover-tag,
@@ -392,8 +511,8 @@ body {
 .node:focus-within,
 .node.node-toolbar-active,
 .node.node-active {
-    border-color: #007BFF;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.18), 0 6px 16px rgba(0, 0, 0, 0.12);
+    border-color: var(--qm-accent);
+    box-shadow: 0 0 0 3px var(--qm-accent-soft), var(--qm-shadow-strong);
 }
 
 /* Delete button */
@@ -410,17 +529,17 @@ body {
 }
 
 .node-delete-button:hover {
-    color: #d0d7de;
+    color: var(--qm-text-muted);
 }
 
 .node-delete-button:active {
-    color: #ffffff;
+    color: var(--qm-text-inverse);
     transform: scale(0.95);
 }
 
 .node-delete-button:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(0, 123, 255, 0.35);
+    box-shadow: 0 0 0 2px var(--qm-surface), 0 0 0 4px var(--qm-node-focus-ring);
 }
 
 /* Rich text area inside the node */
@@ -439,6 +558,7 @@ body {
     scrollbar-width: none;
     white-space: normal;
     word-break: break-word;
+    color: inherit;
 }
 
 .node-textarea:focus {
@@ -447,7 +567,7 @@ body {
 
 .node-textarea:empty::before {
     content: attr(data-placeholder);
-    color: #9aa0b1;
+    color: var(--qm-text-muted);
     pointer-events: none;
 }
 
@@ -483,12 +603,12 @@ body {
 
 .node-textarea hr {
     border: none;
-    border-top: 1px solid #cbd2d9;
+    border-top: 1px solid var(--qm-border);
     margin: 0.75em 0;
 }
 
 .node-textarea ::selection {
-    background-color: rgba(0, 123, 255, 0.2);
+    background-color: var(--qm-accent-soft);
 }
 
 .node-textarea::-webkit-scrollbar {
@@ -516,8 +636,8 @@ body {
 
 .selection-rectangle {
     position: absolute;
-    border: 1px dashed #007BFF;
-    background-color: rgba(0, 123, 255, 0.1);
+    border: 1px dashed var(--qm-selection-border);
+    background-color: var(--qm-selection-fill);
     pointer-events: none;
     z-index: 50;
 }
@@ -533,7 +653,7 @@ body {
     height: 12px;
     bottom: 0;
     right: 0;
-    background-color: rgba(203, 213, 225, 0.8);
+    background-color: var(--qm-resize-bg);
     cursor: se-resize;
     border-top-left-radius: 2px;
     opacity: 0.25;
@@ -544,11 +664,11 @@ body {
     position: absolute;
     width: 16px;
     height: 16px;
-    background-color: rgba(203, 213, 225, 0.85);
-    border: 2px solid #ffffff;
+    background-color: var(--qm-handle-bg);
+    border: 2px solid var(--qm-handle-border);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 4px rgba(148, 163, 184, 0.25);
+    box-shadow: 0 0 4px var(--qm-accent-soft);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -563,7 +683,7 @@ body {
     position: absolute;
     width: 6px;
     height: 6px;
-    background-color: #ffffff;
+    background-color: var(--qm-surface);
     border-radius: 50%;
     top: 50%;
     left: 50%;
@@ -577,8 +697,8 @@ body {
 .node.node-toolbar-active .connection-point,
 .node.node-active .connection-point {
     opacity: 1;
-    background-color: #007BFF;
-    box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+    background-color: var(--qm-handle-active);
+    box-shadow: 0 0 6px var(--qm-accent-soft);
 }
 
 .node:hover .resize-handle,
@@ -587,8 +707,8 @@ body {
 .node.node-toolbar-active .resize-handle,
 .node.node-active .resize-handle {
     opacity: 1;
-    background-color: #007BFF;
-    box-shadow: 0 0 6px rgba(0, 123, 255, 0.25);
+    background-color: var(--qm-resize-active);
+    box-shadow: 0 0 6px var(--qm-accent-soft);
 }
 
 #settings-drawer {
@@ -598,14 +718,15 @@ body {
     width: 280px;
     max-width: 80vw;
     height: 100vh;
-    background: #ffffff;
-    box-shadow: -2px 0 12px rgba(0, 0, 0, 0.2);
+    background: var(--qm-drawer-bg);
+    box-shadow: var(--qm-drawer-shadow);
     transform: translateX(100%);
     transition: transform 0.25s ease;
     display: flex;
     flex-direction: column;
     z-index: 1500;
-    border-left: 1px solid #d0d7de;
+    border-left: 1px solid var(--qm-drawer-border);
+    color: var(--qm-text-default);
 }
 
 #settings-drawer.open {
@@ -617,12 +738,13 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #d0d7de;
+    border-bottom: 1px solid var(--qm-drawer-border);
 }
 
 .settings-header h2 {
     margin: 0;
     font-size: 18px;
+    color: inherit;
 }
 
 .settings-header button {
@@ -631,6 +753,12 @@ body {
     font-size: 20px;
     cursor: pointer;
     line-height: 1;
+    color: inherit;
+    transition: opacity 0.2s ease;
+}
+
+.settings-header button:hover {
+    opacity: 0.75;
 }
 
 .settings-body {
@@ -646,16 +774,89 @@ body {
     gap: 8px;
     font-family: 'Poppins', sans-serif;
     font-size: 14px;
+    color: inherit;
 }
 
 .settings-field.toggle {
     flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
+    cursor: pointer;
 }
 
-.settings-field.toggle span {
+.settings-field .toggle-label {
     font-size: 14px;
+    color: inherit;
+    flex: 1;
+}
+
+.toggle-control {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.toggle-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    background: rgba(148, 163, 184, 0.45);
+    border-radius: 999px;
+    border: 1px solid var(--qm-border);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 4px;
+    box-sizing: border-box;
+}
+
+.toggle-control:hover .toggle-slider {
+    border-color: var(--qm-accent);
+}
+
+body[data-theme="dark"] .toggle-slider {
+    background: rgba(148, 163, 184, 0.3);
+}
+
+.toggle-slider::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--qm-text-inverse);
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.toggle-input:checked + .toggle-slider {
+    background: var(--qm-accent);
+    border-color: var(--qm-accent);
+}
+
+.toggle-input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+    background: var(--qm-text-inverse);
+}
+
+.toggle-input:focus-visible + .toggle-slider {
+    box-shadow: 0 0 0 3px var(--qm-accent-soft);
 }
 
 .connection-animated path {
@@ -723,10 +924,10 @@ body {
     align-items: center;
     gap: 6px;
     padding: 6px 8px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid #d0d7de;
+    background: var(--qm-toolbar-bg);
+    border: 1px solid var(--qm-toolbar-border);
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    box-shadow: var(--qm-toolbar-shadow);
     z-index: 2000;
     transition: opacity 0.15s ease, visibility 0.15s ease;
 }
@@ -746,28 +947,28 @@ body {
     border-radius: 4px;
     font-size: 13px;
     font-family: 'Poppins', 'Roboto', sans-serif;
-    color: #1f2933;
+    color: var(--qm-text-default);
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 #text-formatting-toolbar .toolbar-button:hover,
 #text-formatting-toolbar .toolbar-button:focus-visible {
-    background-color: rgba(0, 123, 255, 0.12);
-    color: #0b5ed7;
+    background-color: var(--qm-toolbar-button-hover);
+    color: var(--qm-accent-strong);
 }
 
 #text-formatting-toolbar .toolbar-button:active {
-    background-color: rgba(0, 123, 255, 0.2);
+    background-color: var(--qm-toolbar-button-active);
 }
 
 #text-formatting-toolbar .toolbar-separator {
     width: 1px;
     height: 20px;
-    background: #d0d7de;
+    background: var(--qm-toolbar-border);
 }
 
-path {
-    stroke: red !important;
+.connection-layer path {
+    stroke: var(--qm-connection-stroke) !important;
     stroke-width: 2px !important;
 }

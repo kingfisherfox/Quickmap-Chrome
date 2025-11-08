@@ -20,6 +20,7 @@ export const state = {
     connectionSettings: {
         animated: false,
     },
+    theme: 'light',
     lastPointerX: 200,
     lastPointerY: 200,
     connections: [],

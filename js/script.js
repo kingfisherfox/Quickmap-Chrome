@@ -8,8 +8,11 @@ import { initializeChartControls } from './charts.js';
 import { initializeSettingsPanel } from './settings.js';
 import { initializeTextFormatting } from './textFormatting.js';
 import { initializeSelectionOverlay } from './selection.js';
+import { initializeTheme } from './theme.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    initializeTheme();
+
     const canvasContainer = document.getElementById('canvas-container');
     const canvasTransform = document.getElementById('canvas-transform');
     const canvasContent = document.getElementById('canvas-content');

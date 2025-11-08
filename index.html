@@ -6,7 +6,7 @@
     <link href="css/styles.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Roboto&display=swap" rel="stylesheet">
 </head>
-<body>
+<body data-theme="light">
     <!-- Header -->
     <header id="header-bar">
         <h1>QuickMap</h1>
@@ -18,7 +18,7 @@
             <button id="delete-chart-btn" type="button">Delete</button>
             <button id="new-chart-btn" type="button">New</button>
             <button id="clear-btn" type="button">Clear</button>
-            <button id="settings-btn" type="button" aria-label="Connection settings">⚙️</button>
+            <button id="settings-btn" type="button" aria-label="Settings">⚙️</button>
         </div>
         
     </header>
@@ -30,13 +30,23 @@
     </div>
     <aside id="settings-drawer" aria-hidden="true">
         <div class="settings-header">
-            <h2>Connection Settings</h2>
+            <h2>Settings</h2>
             <button id="settings-close-btn" type="button" aria-label="Close settings">×</button>
         </div>
         <div class="settings-body">
             <label class="settings-field toggle">
-                <input id="connection-animate-toggle" type="checkbox">
-                <span>Animate connections</span>
+                <span class="toggle-label">Animate connections</span>
+                <span class="toggle-control">
+                    <input id="connection-animate-toggle" class="toggle-input" type="checkbox" role="switch">
+                    <span class="toggle-slider" aria-hidden="true"></span>
+                </span>
+            </label>
+            <label class="settings-field toggle">
+                <span class="toggle-label">Dark mode</span>
+                <span class="toggle-control">
+                    <input id="dark-mode-toggle" class="toggle-input" type="checkbox" role="switch">
+                    <span class="toggle-slider" aria-hidden="true"></span>
+                </span>
             </label>
         </div>
     </aside>
